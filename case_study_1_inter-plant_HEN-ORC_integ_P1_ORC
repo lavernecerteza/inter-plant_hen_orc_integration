@@ -1,0 +1,705 @@
+Sets
+    p       "Plants"                / P1, ORC           /
+    s       "Intermediate fluid"    / hot_IF, cold_IF           / ;
+    
+Alias (p,pp) ;
+Alias (s,ss) ;
+    
+Sets
+    i                   "Hot process streams"   / H11, H12, H13, H14, H17   /
+    plant_IF(p,s,pp,ss) "Interconnections between plants and intermediate fluid"
+                                                / P1.cold_IF.ORC.hot_IF,
+                                                  ORC.hot_IF.P1.cold_IF     /
+    plant_connect(p,pp) "Possible interconnections between plants"
+                                                /   P1.ORC,
+                                                    ORC.P1      / ;
+    
+Scalars
+    NOK                     "Number of superstructure stages"                                           /   5           /
+    Af                      "Annual factor for capital costs"                                           /   0.264       /
+    Hy                      "Total operation time of one year in hr/year"                               /   8000        /
+    cp                      "Intermediate fluid heat capacity flow rate in kJ/kg-K"                     /   2.2         /
+    ho                      "Intermediate fluid heat transfer coefficient in kW/m^2-K"                  /   1.5         /
+    Pe                      "Unitary buy-back price of produced electricity in $/kWh as of August 2024" /   0.08        /
+    etta                    "Pump efficiency"                                                           /   0.7         /
+    rho                     "Intermediate fluid density in kg/m^3"                                      /   862.2       /
+    mu                      "Intermediate fluid viscosity in Pa-s"                                      /   0.00021667  /
+    CU_cow                  "Cooling water utility cost in $1000/kW-yr"                                 /   0.008       /
+    CU_lp                   "Low-pressure steam  utility cost in $1000/kW-yr"                           /   0.04        /
+    CU_mp                   "Medium-pressure steam utility cost in $1000/kW-yr"                         /   0.1         /
+    CU_hp                   "High-pressure steam utility cost in $1000/kW-yr"                           /   0.16        /
+    CU_fuel                 "Fuel utility cost in $1000/kW-yr"                                          /   0.2         /
+    B_pipe                  "Piping cost parameter in $/m^1.7 units as of January 2006"                 /   4700        /
+    n_pipe                  "Piping cost sizing exponent as of January 2006"                            /   1.7         /
+    F                       "Cost of valves, fittings, and erection as a percentage of the pipe purchase cost"  /   1.5 /
+    b_maint                 "Annual pipeline maintenance cost as a percentage of the pipe capital cost" /   0.05        /
+    CEPCI_2001_plant        "Composite CEPCI as of May to December 2001"                                /   397         /
+    CEPCI_2010_plant        "Composite CEPCI as of January 2010"                                        /   532.9       /
+    CEPCI_2024_plant        "Composite CEPCI as of May 2024"                                            /   800.3       /
+    CEPCI_2006_pipe         "CEPCI for pipes as of January 2006"                                        /   655.9       /
+    CEPCI_2024_pipe         "CEPCI for pipes as of May 2024"                                            /   1357.1      /
+    CEPCI_2010_HEX          "CEPCI for heat exchangers as of January 2010"                              /   571.9       /
+    CEPCI_2024_HEX          "CEPCI for heat exchangers as of May 2024"                                  /   801.8       /
+    CEPCI_2010_pump         "CEPCI for pumps as of January 2010"                                        /   903         /
+    CEPCI_2024_pump         "CEPCI for pumps as of May 2024"                                            /   1543.2      /
+    Tmin                    "Minimum temperature of intermediate fluid in deg C"                        /   40          /
+    Tmax                    "Maximum temperature of intermediate fluid in deg C"                        /   240         /
+    psi                     "Upper bound of the hot intermediate fluid stream heat capacity flow rate"  /   20          /
+    epsilon                 "Pipeline insulation thickness in m"                                        /   0.127       /
+    U                       "Overall insulated pipeline heat transfer coefficient in W/m^2-K"           /   0.326       /
+    delta_T                 "Temperature difference between pipe wall and ambient air in deg C"         /   100         /
+    delta                   "Small number added to the denominator to prevent division by zero"         /   0.000001    /
+    C_power                 "Unitary purchase cost of electricity in US$/kWh as of August 2024"         /   0.282       /
+    K1_pump                 "Pump capital cost parameter K1"                                            /   3.3892      /
+    K2_pump                 "Pump capital cost parameter K2"                                            /   0.0536      /
+    K3_pump                 "Pump capital cost parameter K3"                                            /   0.1538      /
+    K1_HEX                  "HEX capital cost parameter K1"                                             /   4.3247      /
+    K2_HEX                  "HEX capital cost parameter K2"                                             /   -0.303      /
+    K3_HEX                  "HEX capital cost parameter K3"                                             /   0.1634      /
+    K1_turb                 "Turbine capital cost parameter K1"                                         /   2.7051      /
+    K2_turb                 "Turbine capital cost parameter K2"                                         /   1.4398      /
+    K3_turb                 "Turbine capital cost parameter K3"                                         /   -0.1776     /
+    
+    Tmin_evap_ORC               "Minimum evaporator temperature in deg C"                                   /   70          /
+    Tmax_cond_ORC               "Maximum condenser temperature in deg C"                                    /   60          /
+    gamma_h_ORC_evap            "Upper bound of the temperature difference between the hot intermediate fluid and the ORC working fluid in the evaporator"      /   170     /
+    gamma_coolant_ORC_cond      "Upper bound of the temperature difference between the condenser cooling water and the ORC working fluid in the condenser"      /   42.2    /
+    TOUTmin_ORC_cond_coolant    "Minimum temperature of the cooling water at the condenser outlet in deg C" /   27.8        /
+    Tmax_turb_outlet_ORC        "Maximum turbine outlet temperature in deg C"                               /   70          /
+    EMAT_ORC                    "Exchanger minimum approach temperature in the ORC system in deg C"         /   10          /
+    TIN_ORC_cond_coolant_1      "Temperature of the cooling water at the condenser inlet of ORC system 1 in deg C"          /   25          /
+    TIN_ORC_cond_coolant_2      "Temperature of the cooling water at the condenser inlet of ORC system 2 in deg C"          /   25          /
+    h_ORC                       "ORC working fluid heat transfer coefficient in kW/m^2-K"                   /   1           /
+    h_ORC_cond_coolant          "Heat transfer coefficient of the condenser coolant in kW/m^2-K"            /   1           /
+    CU_orc_cond                 "Cooling water utility cost for the ORC condenser in $1000/kW-yr"           /   0.008       /
+    cp_cond_coolant             "Specific heat of the condenser cooling water in kJ/kg-K"                   /   4.187       / ;
+    
+Sets
+    k_h       "Plant 1 temperature locations = NOK + 1"             /   1*6     /
+    sth(k_h)  "Plant 1 superstructure stages"    ;
+    
+Singleton Set
+    firstKh(k_h)   "First temperature location in Plant 1"
+    lastKh(k_h)    "Last temperature location in Plant 1" ;
+    
+sth(k_h)     = yes$(ord(k_h) < card(k_h));
+firstKh(k_h) = yes$(ord(k_h) = 1);
+lastKh(k_h)  = yes$(ord(k_h) = card(k_h));
+  
+Table tin_h(p,i)  "Supply temperatures of hot process streams in deg C"
+                H11     H12     H13     H14     H17
+        P1      228     228     228     228     250 ;
+        
+Table tout_h(p,i) "Target temperatures of hot process streams in deg C"
+                H11     H12     H13     H14     H17
+        P1      70      80      190     190     128 ;
+        
+Table h_h(p,i)    "Heat transfer coefficients of hot process streams in kW/m^2-K"
+                H11     H12     H13     H14     H17
+        P1      1.1     1.3     1.5     1.5     1.9 ;
+        
+Table F_h(p,i)    "Hot process stream heat capacity flow rates in MW/K"
+                H11     H12     H13     H14     H17
+        P1      0.0338  0.0314  0.135   0.0636  0.091 ;
+        
+Table ech(p,i)  "Heat content of hot process streams in MW"
+                H11     H12     H13     H14     H17
+        P1      5.3404  4.6472  5.13    2.4168  11.102 ;
+        
+Table EMAT_h(p,i) "Minimum temperature difference between hot process stream and cold intermediate fluid in deg C"
+                H11     H12     H13     H14     H17
+        P1      10      10      10      10      10 ;
+        
+Table L(p,p)    "Distance between plants in m"
+                P1      ORC      
+        P1              577.35
+        ORC     577.35  ;
+        
+Parameter gamma_c(p,i)  "Upper bound of temperature difference between hot process stream and cold intermediate fluid"  ;
+gamma_c(p,i)$(tin_h(p,i) - Tmin < EMAT_h(p,i)) = abs(tin_h(p,i) - Tmin) + EMAT_h(p,i) ;
+gamma_c(p,i)$(tin_h(p,i) - Tmin >= EMAT_h(p,i)) = max(0, tin_h(p,i) - Tmin, Tmax - tout_h(p,i)) ;
+
+Positive Variables
+    y(p,s,pp,ss)            "Denotes existence of connection between two plants"
+    zc(p,i,k_h)             "Denotes existence of heat exchanger between hot process stream and cold intermediate fluid"
+    m(p,s,pp,ss)            "Intermediate fluid stream heat capacity flow rate in MW/K"
+    Mh(p)                     "Hot intermediate fluid stream heat capacity flow rate in MW/K"
+    Mc(p)                     "Cold intermediate fluid stream heat capacity flow rate in MW/K"
+    tcmin(p)                  "Inlet temperature of cold intermediate fluid in deg C"
+    tcmout(p)                 "Outlet temperature of cold intermediate fluid in deg C"
+    thmin(p)                  "Inlet temperature of hot intermediate fluid in deg C"
+    thmout(p)                 "Outlet temperature of hot intermediate fluid in deg C"
+    tcm(p,k_h)                "Cold intermediate fluid temperature in deg C"
+    t_h(p,i,k_h)              "Hot process stream temperature in deg C"
+    qc(p,i,k_h)               "Heat transferred between cold intermediate fluid and hot process stream in MW"
+    qu_h(p,i)                 "Cold utility load in MW"
+    dtc(p,i,k_h)              "Temperature difference between cold intermediate fluid and hot process stream in deg C"
+    Din(p,s,pp,ss)              "Pipe inner diameter for intermediate fluid in m"
+    Pl(p,s,pp,ss)               "Capital cost of pipeline per unit length in 1000$/m"
+    Piping(p,s,pp,ss)           "Annualized piping cost for intermediate fluid in 1000$/yr"
+    v(p,s,pp,ss)                "Velocity of intermediate fluid in m/s"
+    Re(p,s,pp,ss)               "Reynolds number of the intermediate fluid in 1000 units"
+    fr(p,s,pp,ss)               "Friction factor of the intermediate fluid"
+    delta_P(p,s,pp,ss)          "IHTF pressure drop along the pipeline in kPa"
+    Q(p,s,pp,ss)                "Pump power consumption in kW"
+    Pumpcapital(p,s,pp,ss)      "Capital cost of pump in 1000$"
+    Pumpoperation(p,s,pp,ss)    "Annualized pump operation cost in 1000$/yr"
+    Pumping(p,s,pp,ss)          "Annualized pumping cost for intermediate fluid in 1000$/yr"
+    A_h(p,i,k_h)              "HEX area between cold intermediate fluid and hot process stream in m^2"
+    HEX_h_cost(p,i,k_h)         "Capital cost of HEX between a hot process stream and cold IHTF at each superstructure stage in $1000"
+
+    m_ORC_evap_1                "Heat capacity flow rate in MW/K of the hot intermediate fluid stream that exchanges heat with the ORC working fluid in the ORC evaporator of ORC system 1"
+    m_ORC_evap_2                "Heat capacity flow rate in MW/K of the hot intermediate fluid stream that exchanges heat with the ORC working fluid in the ORC evaporator of ORC system 2"
+    m_ORC_bypass                "Heat capacity flow rate in MW/K of the hot intermediate fluid stream that bypasses the ORC evaporator"
+    zorc_1                      "Denotes existence of ORC system 1 within the intermediate heat transfer fluid circuit"
+    zorc_2                      "Denotes existence of ORC system 2 within the intermediate heat transfer fluid circuit"
+    thminter_ORC_evap_1         "Temperature in deg C of the intermediate fluid at the intermediate point of the evaporator of ORC system 1"
+    thminter_ORC_evap_2         "Temperature in deg C of the intermediate fluid at the intermediate point of the evaporator of ORC system 2"
+    thmout_ORC_evap_1           "Temperature in deg C of the portion of the hot intermediate fluid stream that exchanges heat with the ORC working fluid as it exits the ORC evaporator of ORC system 1"
+    thmout_ORC_evap_2           "Temperature in deg C of the portion of the hot intermediate fluid stream that exchanges heat with the ORC working fluid as it exits the ORC evaporator of ORC system 2"
+    tinter_ORC_cond_coolant_1   "Temperature in deg C of the condenser cooling water at the intermediate point of the condenser of ORC system 1"
+    tinter_ORC_cond_coolant_2   "Temperature in deg C of the condenser cooling water at the intermediate point of the condenser of ORC system 2"
+    tout_ORC_cond_coolant_1     "Temperature in deg C of the condenser cooling water at the outlet of the condenser of ORC system 1"
+    tout_ORC_cond_coolant_2     "Temperature in deg C of the condenser cooling water at the outlet of the condenser of ORC system 2"
+    m_ORC_WF_1                  "Mass flow rate in kg/s of the ORC working fluid of ORC system 1"
+    m_ORC_WF_2                  "Mass flow rate in kg/s of the ORC working fluid of ORC system 2"
+    q_ORC_evap_1                "Total rate of heat transferred to the ORC working fluid in the evaporator of ORC system 1 in MW"
+    q_ORC_evap_2                "Total rate of heat transferred to the ORC working fluid in the evaporator of ORC system 2 in MW"
+    q_ORC_evap_subcooled_1      "Rate of sensible heat transferred to the ORC working fluid in the evaporator of ORC system 1 in MW"
+    q_ORC_evap_subcooled_2      "Rate of sensible heat transferred to the ORC working fluid in the evaporator of ORC system 2 in MW"
+    q_ORC_evap_wet_1            "Rate of latent heat transferred to the ORC working fluid in the evaporator of ORC system 1 in MW"
+    q_ORC_evap_wet_2            "Rate of latent heat transferred to the ORC working fluid in the evaporator of ORC system 2 in MW"
+    q_ORC_cond_1                "Total rate of heat rejected by the ORC working fluid in the condenser of ORC system 1 in MW"
+    q_ORC_cond_2                "Total rate of heat rejected by the ORC working fluid in the condenser of ORC system 2 in MW"
+    q_ORC_cond_superheat_1      "Rate of sensible heat rejected by the ORC working fluid in the condenser of ORC system 1 in MW"
+    q_ORC_cond_superheat_2      "Rate of sensible heat rejected by the ORC working fluid in the condenser of ORC system 2 in MW"
+    q_ORC_cond_wet_1            "Rate of latent heat rejected by the ORC working fluid in the condenser of ORC system 1 in MW"
+    q_ORC_cond_wet_2            "Rate of latent heat rejected by the ORC working fluid in the condenser of ORC system 2 in MW"
+    E_ORC_turb_1                "ORC turbine power production of ORC system 1 in MW"
+    E_ORC_turb_2                "ORC turbine power production of ORC system 2 in MW"
+    E_ORC_pump_1                "ORC pump power consumption of ORC system 1 in MW"
+    E_ORC_pump_2                "ORC pump power consumption of ORC system 2 in MW"
+    Tevap                       "Evaporator temperature in deg C"
+    Tcond                       "Condenser temperature in deg C"
+    Pevap                       "Evaporator pressure in MPa"
+    Pcond                       "Condenser pressure in MPa"
+    T1_1                        "Temperature of the ORC working fluid at the condenser outlet of ORC system 1 in deg C"
+    T1_2                        "Temperature of the ORC working fluid at the condenser outlet of ORC system 2 in deg C"
+    h1_1                        "Enthalpy of the ORC working fluid at the pump inlet of ORC system 1 in kJ/kg"
+    h1_2                        "Enthalpy of the ORC working fluid at the pump inlet of ORC system 2 in kJ/kg"
+    s1_1                        "Entropy of the ORC working fluid at the pump inlet of ORC system 1 in kJ/kg-K"
+    s1_2                        "Entropy of the ORC working fluid at the pump inlet of ORC system 2 in kJ/kg-K"
+    s2_1                        "Entropy of the ORC working fluid at the pump outlet of ORC system 1 in kJ/kg-K"
+    s2_2                        "Entropy of the ORC working fluid at the pump outlet of ORC system 2 in kJ/kg-K"
+    T2_1                        "Temperature of the ORC working fluid at the evaporator inlet of ORC system 1 in deg C"
+    T2_2                        "Temperature of the ORC working fluid at the evaporator inlet of ORC system 2 in deg C"
+    h2_1                        "Enthalpy of the ORC working fluid at the evaporator inlet of ORC system 1 in kJ/kg"
+    h2_2                        "Enthalpy of the ORC working fluid at the evaporator inlet of ORC system 2 in kJ/kg"
+    T3_1                        "Temperature of the ORC working fluid at the intermediate point of the evaporator of ORC system 1 in deg C"
+    T3_2                        "Temperature of the ORC working fluid at the intermediate point of the evaporator of ORC system 2 in deg C"
+    h3_1                        "Enthalpy of the ORC working fluid at the intermediate point of the evaporator of ORC system 1 in kJ/kg"
+    h3_2                        "Enthalpy of the ORC working fluid at the intermediate point of the evaporator of ORC system 2 in kJ/kg"
+    T4_1                        "Temperature of the ORC working fluid at the turbine inlet of ORC system 1 in deg C"
+    T4_2                        "Temperature of the ORC working fluid at the turbine inlet of ORC system 2 in deg C"
+    h4_1                        "Enthalpy of the ORC working fluid at the turbine inlet of ORC system 1 in kJ/kg"
+    h4_2                        "Enthalpy of the ORC working fluid at the turbine inlet of ORC system 2 in kJ/kg"
+    s4_1                        "Entropy of the ORC working fluid at the turbine inlet of ORC system 1 in kJ/kg-K"
+    s4_2                        "Entropy of the ORC working fluid at the turbine inlet of ORC system 2 in kJ/kg-K"
+    T5_1                        "Temperature of the ORC working fluid at the condenser inlet of ORC system 1 in deg C"
+    T5_2                        "Temperature of the ORC working fluid at the condenser inlet of ORC system 2 in deg C"
+    h5_1                        "Enthalpy of the ORC working fluid at the condenser inlet of ORC system 1 in kJ/kg"
+    h5_2                        "Enthalpy of the ORC working fluid at the condenser inlet of ORC system 2 in kJ/kg"
+    s5_1                        "Entropy of the ORC working fluid at the condenser inlet of ORC system 1 in kJ/kg-K"
+    s5_2                        "Entropy of the ORC working fluid at the condenser inlet of ORC system 2 in kJ/kg-K"
+    T6_1                        "Temperature of the ORC working fluid at the intermediate point of the condenser of ORC system 1 in deg C"
+    T6_2                        "Temperature of the ORC working fluid at the intermediate point of the condenser of ORC system 2 in deg C"
+    h6_1                        "Enthalpy of the ORC working fluid at the intermediate point of the condenser of ORC system 1 in kJ/kg"
+    h6_2                        "Enthalpy of the ORC working fluid at the intermediate point of the condenser of ORC system 2 in kJ/kg"
+    dt_in_ORC_evap_1            "Approach temperature at the evaporator inlet of ORC system 1 in deg C"
+    dt_in_ORC_evap_2            "Approach temperature at the evaporator inlet of ORC system 2 in deg C"
+    dt_inter_ORC_evap_1         "Approach temperature at the intermediate point of the evaporator of ORC system 1 in deg C"
+    dt_inter_ORC_evap_2         "Approach temperature at the intermediate point of the evaporator of ORC system 2 in deg C"
+    dt_out_ORC_evap_1           "Approach temperature at the evaporator outlet of ORC system 1 in deg C"
+    dt_out_ORC_evap_2           "Approach temperature at the evaporator outlet of ORC system 2 in deg C"
+    dt_in_ORC_cond_1            "Approach temperature at the condenser inlet of ORC system 1 in deg C"
+    dt_in_ORC_cond_2            "Approach temperature at the condenser inlet of ORC system 2 in deg C"
+    dt_inter_ORC_cond_1         "Approach temperature at the intermediate point of the condenser of ORC system 1 in deg C"
+    dt_inter_ORC_cond_2         "Approach temperature at the intermediate point of the condenser of ORC system 2 in deg C"
+    dt_out_ORC_cond_1           "Approach temperature at the condenser outlet of ORC system 1 in deg C"
+    dt_out_ORC_cond_2           "Approach temperature at the condenser outlet of ORC system 2 in deg C"
+    A_ORC_evap_subcooled_1      "Evaporator area between the inlet and the intermediate point of ORC system 1 in m^2"
+    A_ORC_evap_subcooled_2      "Evaporator area between the inlet and the intermediate point of ORC system 2 in m^2"
+    A_ORC_evap_wet_1            "Evaporator area between the intermediate point and the outlet of ORC system 1 in m^2"
+    A_ORC_evap_wet_2            "Evaporator area between the intermediate point and the outlet of ORC system 2 in m^2"
+    A_ORC_cond_superheat_1      "Condenser area between the inlet and the intermediate point of ORC system 1 in m^2"
+    A_ORC_cond_superheat_2      "Condenser area between the inlet and the intermediate point of ORC system 2 in m^2"
+    A_ORC_cond_wet_1            "Condenser area between the intermediate point and the outlet of ORC system 1 in m^2"
+    A_ORC_cond_wet_2            "Condenser area between the intermediate point and the outlet of ORC system 2 in m^2"
+    ORC_evap_subcooled_cost_1   "Capital cost of the evaporator area between the inlet and the intermediate point of ORC system 1 in $1000"
+    ORC_evap_subcooled_cost_2   "Capital cost of the evaporator area between the inlet and the intermediate point of ORC system 2 in $1000"
+    ORC_evap_wet_cost_1         "Capital cost of the evaporator area between the intermediate point and the outlet of ORC system 1 in $1000"
+    ORC_evap_wet_cost_2         "Capital cost of the evaporator area between the intermediate point and the outlet of ORC system 2 in $1000"
+    ORC_cond_superheat_cost_1   "Capital cost of the condenser area between the inlet and the intermediate point of ORC system 1 in $1000"
+    ORC_cond_superheat_cost_2   "Capital cost of the condenser area between the inlet and the intermediate point of ORC system 2 in $1000"
+    ORC_cond_wet_cost_1         "Capital cost of the condenser area between the intermediate point and the outlet of ORC system 1 in $1000"
+    ORC_cond_wet_cost_2         "Capital cost of the condenser area between the intermediate point and the outlet of ORC system 2 in $1000"
+    Cost_ORC_pump_1             "Capital cost of the ORC pump of ORC system 1 in $1000"
+    Cost_ORC_pump_2             "Capital cost of the ORC pump of ORC system 2 in $1000"
+    Cost_ORC_turb_1             "Capital cost of the ORC turbine of ORC system 1 in $1000"
+    Cost_ORC_turb_2             "Capital cost of the ORC turbine of ORC system 2 in $1000"
+    Revenue_ORC_1               "Annual revenue from the sale of produced electricity from ORC system 1 in $1000/yr"
+    Revenue_ORC_2               "Annual revenue from the sale of produced electricity from ORC system 2 in $1000/yr"
+    Cost_ORC_pump_power_cons_1  "Annual operational cost of the ORC pump of ORC system 1 in $1000/yr"
+    Cost_ORC_pump_power_cons_2  "Annual operational cost of the ORC pump of ORC system 2 in $1000/yr"
+    m_ORC_cond_coolant_1        "Mass flow rate of the condenser cooling water of ORC system 1 in kg/s"
+    m_ORC_cond_coolant_2        "Mass flow rate of the condenser cooling water of ORC system 2 in kg/s";
+
+Variable
+    TAC                     "Total annualized cost" ;
+    
+Equations
+    Constraint_1c           "Mass balance for the hot intermediate fluid splitter of the ORC plant"
+    Constraint_1d           "Mass balance at the internal splitter of the ORC plant"
+    Constraint_2            "Mass balance for the cold intermediate fluid splitter of Plant 1"
+    
+    Constraint_3a           "Logical constraint for the connection between Plant 1 and the ORC plant"
+    Constraint_3d           "Logical constraint for the connection between the ORC plant and Plant 1"
+
+    Constraint_4c           "Mass balance for the hot intermediate fluid mixer of the ORC plant"
+    Constraint_5            "Mass balance for the cold intermediate fluid mixer of Plant 1"
+    
+    Constraint_6a           "Heat loss from the pipeline connecting Plants 1 and the ORC plant"
+    Constraint_7a           "Energy balance at the internal mixer of the ORC plant"
+    Constraint_7b           "Heat loss from the pipeline connecting the ORC plant and Plant 1"
+    
+    Constraint_9            "Assignment of cold intermediate fluid outlet temperature at the start of the superstructure of Plant 1"
+    Constraint_10(i)        "Assignment of hot process stream supply temperature at the start of the superstructure of Plant 1"
+    Constraint_12           "Assignment of cold intermediate fluid inlet temperature at the end of the superstructure of Plant 1"
+    Constraint_14(i)        "Overall energy balance constraint for each hot process stream in Plant 1"
+    Constraint_16(i,k_h)      "Monotonic decrease of hot process stream temperature as stage number increases in Plant 1"
+    Constraint_19(k_h)        "Monotonic decrease of cold intermediate fluid temperature as stage number increases in Plant 1"
+    Constraint_19a          "Monotonic decrease of hot intermediate fluid temperature at it passes through the inlet and intermediate point of the evaporator of ORC system 1"
+    Constraint_19b          "Monotonic decrease of hot intermediate fluid temperature as it passes through the intermediate point and outlet of the evaporator of ORC system 1"
+    Constraint_19c          "Monotonic increase of condenser cooling water temperature as it passes through the inlet and intermediate point of the condenser of ORC system 1"
+    Constraint_19d          "Monotonic increase of condenser cooling water temperature as it passes through the intermediate point and outlet of the condenser of ORC system 1"
+    Constraint_19e          "Monotonic decrease of hot intermediate fluid temperature at it passes through the inlet and intermediate point of the evaporator of ORC system 2"
+    Constraint_19f          "Monotonic decrease of hot intermediate fluid temperature as it passes through the intermediate point and outlet of the evaporator of ORC system 2"
+    Constraint_19g          "Monotonic increase of condenser cooling water temperature as it passes through the inlet and intermediate point of the condenser of ORC system 2"
+    Constraint_19h          "Monotonic increase of condenser cooling water temperature as it passes through the intermediate point and outlet of the condenser of ORC system 2"
+    
+    Constraint_20c            "Heat released by hot intermediate fluid to the ORC working fluid in ORC system 1"
+    Constraint_20d            "Heat released by hot intermediate fluid to the ORC working fluid in ORC system 2"
+    Constraint_21(k_h)        "Heat absorbed by cold intermediate fluid from the hot process streams in Plant 1 at each stage"
+    
+    Constraint_22(i,k_h)      "Enthalpy variation of each hot process stream in Plant 1 at each stage"
+    
+    Constraint_24c            "Logical constraint to determine the existence of an evaporator for ORC system 1, thereby confirming the presence of an ORC system 1"
+    Constraint_24d            "Logical constraint to determine the existence of an evaporator for ORC system 2, thereby confirming the presence of an ORC system 2"
+    Constraint_25(i,k_h)      "Logical constraint to determine the existence of a heat exchanger at each stage in Plant 1 between hot process stream and cold intermediate fluid"
+    
+    Constraint_28(i,k_h)      "Maximum approach temperature at the left side of the HEX between each hot process stream in Plant 1 and the cold intermediate fluid at each stage"
+    Constraint_29(i,k_h)      "Maximum approach temperature at the right side of the HEX between each hot process stream in Plant 1 and the cold intermediate fluid at each stage"
+    Constraint_34(i)        "Cooling utility load for each hot process stream in Plant 1 at the last superstructure stage" 
+    Constraint_36(p,s,pp,ss)    "Internal diameter of the pipe transporting intermediate fluid"
+    Constraint_39(p,s,pp,ss)    "Pipeline capital cost per unit length"
+    Constraint_40(p,s,pp,ss)    "Capital cost of pipeline adjusted to May 2024 price"
+    
+    Constraint_41(p,s,pp,ss)    "Velocity of the intermediate fluid"
+    Constraint_42(p,s,pp,ss)    "Reynolds number of the intermediate fluid"
+    Constraint_43(p,s,pp,ss)    "Friction factor of the intermediate fluid"
+    
+    Constraint_44(p,s,pp,ss)    "Pressure drop of IHTF along the pipeline"
+    
+    Constraint_45(p,s,pp,ss)    "Capital cost of IHTF pump"
+    
+    Constraint_46(p,s,pp,ss)    "IHTF pump power consumption"
+    
+    Constraint_47(p,s,pp,ss)    "Annualized pump operation cost for transporting intermediate fluid stream"
+    Constraint_48(p,s,pp,ss)    "Total pumping cost for transporting intermediate fluid stream"
+    Constraint_49(i,k_h)      "Calculation of HEX area between cold intermediate fluid and hot process stream in Plant 1"
+    
+    Constraint_49a(i,k_h)       "Calculation of capital cost of HEX between hot process stream and cold IHTF in Plant 1"
+    
+    Constraint_51a              "Equating condenser temperature to the ORC working fluid temperature at pump inlet of ORC system 1 (state 1)"
+    Constraint_51b              "Equating condenser temperature to the ORC working fluid temperature at pump inlet of ORC system 2 (state 1)"
+    Constraint_52a              "Equating condenser temperature to the ORC working fluid temperature at the intermediate point of the condenser of ORC system 1 (state 6)"
+    Constraint_52b              "Equating condenser temperature to the ORC working fluid temperature at the intermediate point of the condenser of ORC system 2 (state 6)"
+    Constraint_53a              "Equating evaporator temperature to the ORC working fluid temperature at the intermediate point of the evaporator of ORC system 1 (state 3)"
+    Constraint_53b              "Equating evaporator temperature to the ORC working fluid temperature at the intermediate point of the evaporator of ORC system 2 (state 3)"
+    Constraint_54a              "Equating evaporator temperature to the ORC working fluid temperature at the turbine inlet of ORC system 1 (state 4)"
+    Constraint_54b              "Equating evaporator temperature to the ORC working fluid temperature at the turbine inlet of ORC system 2 (state 4)"
+    Constraint_55               "Condenser pressure as a function of the condenser temperature"
+    Constraint_56               "Evaporator pressure as a function of the evaporator temperature"
+    Constraint_57a              "Enthalpy of the ORC working fluid at the pump inlet as a function of the condenser temperature of ORC system 1 (state 1)"
+    Constraint_57b              "Enthalpy of the ORC working fluid at the pump inlet as a function of the condenser temperature of ORC system 2 (state 1)"
+    Constraint_58a              "Entropy of the ORC working fluid at the pump inlet as a function of the condenser temperature of ORC system 1 (state 1)"
+    Constraint_58b              "Entropy of the ORC working fluid at the pump inlet as a function of the condenser temperature of ORC system 2 (state 1)"
+    Constraint_59a              "Requirement for isentropic condition at the ORC pump of ORC system 1"
+    Constraint_59b              "Requirement for isentropic condition at the ORC pump of ORC system 2"
+    Constraint_60a              "Temperature of the ORC working fluid at the evaporator inlet as a function of the evaporator pressure and ORC working fluid entropy at the pump outlet of ORC system 1 (state 2)"
+    Constraint_60b              "Temperature of the ORC working fluid at the evaporator inlet as a function of the evaporator pressure and ORC working fluid entropy at the pump outlet of ORC system 2 (state 2)"
+    Constraint_61a              "Enthalpy of the ORC working fluid at the evaporator inlet as a function of the evaporator pressure and ORC working fluid entropy at the pump outlet of ORC system 1 (state 2)"
+    Constraint_61b              "Enthalpy of the ORC working fluid at the evaporator inlet as a function of the evaporator pressure and ORC working fluid entropy at the pump outlet of ORC system 2 (state 2)"
+    Constraint_62a              "Enthalpy of the ORC working fluid at the intermediate point of the evaporator as a function of the evaporator temperature of ORC system 1 (state 3)"
+    Constraint_62b              "Enthalpy of the ORC working fluid at the intermediate point of the evaporator as a function of the evaporator temperature of ORC system 2 (state 3)"
+    Constraint_63a              "Enthalpy of the ORC working fluid at the turbine inlet as a function of the evaporator temperature of ORC system 1 (state 4)"
+    Constraint_63b              "Enthalpy of the ORC working fluid at the turbine inlet as a function of the evaporator temperature of ORC system 2 (state 4)"
+    Constraint_64a              "Entropy of the ORC working fluid at the turbine inlet as a function of the evaporator temperature of ORC system 1 (state 4)"
+    Constraint_64b              "Entropy of the ORC working fluid at the turbine inlet as a function of the evaporator temperature of ORC system 2 (state 4)"
+    Constraint_65a              "Requirement for isentropic condition at the ORC turbine of ORC system 1"
+    Constraint_65b              "Requirement for isentropic condition at the ORC turbine of ORC system 2"
+    Constraint_66a              "Temperature of the ORC working fluid at the turbine outlet as a function of the condenser temperature and ORC working fluid entropy at the turbine outlet of ORC system 1 (state 5)"
+    Constraint_66b              "Temperature of the ORC working fluid at the turbine outlet as a function of the condenser temperature and ORC working fluid entropy at the turbine outlet of ORC system 2 (state 5)"
+    Constraint_67a              "Enthalpy of the ORC working fluid at the turbine outlet as a function of the condenser pressure and ORC working fluid entropy at the turbine outlet of ORC system 1 (state 5)"
+    Constraint_67b              "Enthalpy of the ORC working fluid at the turbine outlet as a function of the condenser pressure and ORC working fluid entropy at the turbine outlet of ORC system 2 (state 5)"
+    Constraint_68a              "Enthalpy of the ORC working fluid at the intermediate point of the condenser as a function of the condenser temperature of ORC system 1 (state 6)"
+    Constraint_68b              "Enthalpy of the ORC working fluid at the intermediate point of the condenser as a function of the condenser temperature of ORC system 2 (state 6)"
+    Constraint_69a              "Dividing the evaporator heat load between the sensible and latent heat loads transferred to the ORC working fluid of ORC system 1"
+    Constraint_69b              "Dividing the evaporator heat load between the sensible and latent heat loads transferred to the ORC working fluid of ORC system 2"
+    Constraint_70a              "Sensible heat transferred to the ORC working fluid at the subcooled region in ORC system 1"
+    Constraint_70b              "Sensible heat transferred to the ORC working fluid at the subcooled region in ORC system 2"
+    Constraint_71a              "Latent heat transferred to the ORC working fluid at the wet region in ORC system 1"
+    Constraint_71b              "Latent heat transferred to the ORC working fluid at the wet region in ORC system 2"
+    Constraint_72a              "ORC turbine power production in ORC system 1"
+    Constraint_72b              "ORC turbine power production in ORC system 2"
+    Constraint_73a              "ORC pump power consumption in ORC system 1"
+    Constraint_73b              "ORC pump power consumption in ORC system 2"
+    Constraint_74a              "ORC condenser heat rejection rate in ORC system 1"
+    Constraint_74b              "ORC condenser heat rejection rate in ORC system 2"
+    Constraint_75a              "Dividing the condenser heat rejection rate between the sensible and latent heat transfers from the ORC working fluid in ORC system 1"
+    Constraint_75b              "Dividing the condenser heat rejection rate between the sensible and latent heat transfers from the ORC working fluid in ORC system 2"
+    Constraint_76a              "Sensible heat rejected by the ORC working fluid at the superheated region in ORC system 1"
+    Constraint_76b              "Sensible heat rejected by the ORC working fluid at the superheated region in ORC system 2"
+    Constraint_77a              "Latent heat rejected by the ORC working fluid at the wet region in ORC system 1"
+    Constraint_77b              "Latent heat rejected by the ORC working fluid at the wet region in ORC system 2"
+    Constraint_78a              "Approach temperature at the evaporator inlet of ORC system 1"
+    Constraint_78b              "Approach temperature at the evaporator inlet of ORC system 2"
+    Constraint_79a              "Approach temperature at the intermediate point of the evaporator of ORC system 1"
+    Constraint_79b              "Approach temperature at the intermediate point of the evaporator of ORC system 2"
+    Constraint_80a              "Approach temperature at the evaporator outlet of ORC system 1"
+    Constraint_80b              "Approach temperature at the evaporator outlet of ORC system 2"
+    Constraint_81a              "Constraint to ensure that the intermediate fluid temperature at the intermediate point of the evaporator exceeds the ORC evaporator temperature by at least the EMAT of the ORC in ORC system 1"
+    Constraint_81b              "Constraint to ensure that the intermediate fluid temperature at the intermediate point of the evaporator exceeds the ORC evaporator temperature by at least the EMAT of the ORC in ORC system 2"
+    Constraint_82a              "Approach temperature at the condenser inlet of ORC system 1"
+    Constraint_82b              "Approach temperature at the condenser inlet of ORC system 2"
+    Constraint_83a              "Approach temperature at the intermediate point of the condenser of ORC system 1"
+    Constraint_83b              "Approach temperature at the intermediate point of the condenser of ORC system 2"
+    Constraint_84a              "Approach temperature at the condenser outlet of ORC system 1"
+    Constraint_84b              "Approach temperature at the condenser outlet of ORC system 2"
+    Constraint_85a              "Constraint to ensure that the ORC working fluid temperature at the intermediate point of the condenser exceeds the condenser cooling water temperature by at least the EMAT of the ORC in ORC system 1"
+    Constraint_85b              "Constraint to ensure that the ORC working fluid temperature at the intermediate point of the condenser exceeds the condenser cooling water temperature by at least the EMAT of the ORC in ORC system 2"
+    Constraint_86a              "Evaporator area between the inlet and the intermediate point of ORC system 1"
+    Constraint_86b              "Evaporator area between the inlet and the intermediate point of ORC system 2"
+    Constraint_87a              "Evaporator area between the intermediate point and the outlet of ORC system 1"
+    Constraint_87b              "Evaporator area between the intermediate point and the outlet of ORC system 2"
+    Constraint_88a              "Condenser area between the inlet and the intermediate point of ORC system 1"
+    Constraint_88b              "Condenser area between the inlet and the intermediate point of ORC system 2"
+    Constraint_89a              "Condenser area between the intermediate point and the outlet of ORC system 1"
+    Constraint_89b              "Condenser area between the intermediate point and the outlet of ORC system 2"
+    Constraint_90a              "Capital cost of the evaporator area between the inlet and the intermediate point of ORC system 1"
+    Constraint_90b              "Capital cost of the evaporator area between the inlet and the intermediate point of ORC system 2"
+    Constraint_91a              "Capital cost of the evaporator area between the intermediate point and the outlet of ORC system 1"
+    Constraint_91b              "Capital cost of the evaporator area between the intermediate point and the outlet of ORC system 2"
+    Constraint_92a              "Capital cost of the condenser area between the inlet and the intermediate point of ORC system 1"
+    Constraint_92b              "Capital cost of the condenser area between the inlet and the intermediate point of ORC system 2"
+    Constraint_93a              "Capital cost of the condenser area between the intermediate point and the outlet of ORC system 1"
+    Constraint_93b              "Capital cost of the condenser area between the intermediate point and the outlet of ORC system 2"
+    Constraint_94a              "Capital cost of the ORC pump of ORC system 1"
+    Constraint_94b              "Capital cost of the ORC pump of ORC system 2"
+    Constraint_95a              "Capital cost of the ORC turbine of ORC system 1"
+    Constraint_95b              "Capital cost of the ORC turbine of ORC system 2"
+    Constraint_96a              "Annual revenue from the sale of produced electricity from ORC system 1"
+    Constraint_96b              "Annual revenue from the sale of produced electricity from ORC system 2"
+    Constraint_97a              "Annual operational cost of the ORC pump of ORC system 1"
+    Constraint_97b              "Annual operational cost of the ORC pump of ORC system 2"
+    Constraint_98a              "Heat absorbed by the condenser cooling water as it passes through the outlet to the intermediate point of the condenser of ORC system 1"
+    Constraint_98b              "Heat absorbed by the condenser cooling water as it passes through the outlet to the intermediate point of the condenser of ORC system 2"
+    Constraint_99a              "Heat absorbed by the condenser cooling water as it passes through the intermediate point to the inlet of the condenser of ORC system 1"
+    Constraint_99b              "Heat absorbed by the condenser cooling water as it passes through the intermediate point to the inlet of the condenser of ORC system 2"
+    Constraint_100a             "Heat rejected by the hot intermediate fluid to the ORC working fluid which corresponds to the sensible heat received by the ORC working fluid in ORC system 1"
+    Constraint_100b             "Heat rejected by the hot intermediate fluid to the ORC working fluid which corresponds to the sensible heat received by the ORC working fluid in ORC system 2"
+    Constraint_101a             "Heat rejected by the hot intermediate fluid to the ORC working fluid which corresponds to the latent heat received by the ORC working fluid in ORC system 1"
+    Constraint_101b             "Heat rejected by the hot intermediate fluid to the ORC working fluid which corresponds to the latent heat received by the ORC working fluid in ORC system 2"
+    
+    Objective               "Minimize total annualized cost"    ;
+    
+Constraint_1c.. Mh('ORC') =e= m('ORC','hot_IF','P1','cold_IF') ;
+Constraint_1d.. Mh('ORC') =e= m_ORC_evap_1 + m_ORC_evap_2 + m_ORC_bypass ;
+Constraint_2.. Mc('P1') =e= m('P1','cold_IF','ORC','hot_IF') ;
+
+Constraint_3a.. y('P1','cold_IF','ORC','hot_IF') =e= m('P1','cold_IF','ORC','hot_IF') / (m('P1','cold_IF','ORC','hot_IF') + delta) ;
+Constraint_3d.. y('ORC','hot_IF','P1','cold_IF') =e= m('ORC','hot_IF','P1','cold_IF') / (m('ORC','hot_IF','P1','cold_IF') + delta) ;
+
+Constraint_4c.. Mh('ORC') =e= m('P1','cold_IF','ORC','hot_IF') ;
+Constraint_5.. Mc('P1') =e= m('ORC','hot_IF','P1','cold_IF') ;
+
+Constraint_6a.. m('P1','cold_IF','ORC','hot_IF') * (tcmout('P1') - thmin('ORC')) * 10**6 =e= pi * Din('P1','cold_IF','ORC','hot_IF') * L('P1','ORC') * U * delta_T ;
+Constraint_7a.. m('ORC','hot_IF','P1','cold_IF') * thmout('ORC') =e= m_ORC_evap_1 * thmout_ORC_evap_1 + m_ORC_evap_2 * thmout_ORC_evap_2 + m_ORC_bypass * thmin('ORC') ;
+Constraint_7b.. m('ORC','hot_IF','P1','cold_IF') * (thmout('ORC') - tcmin('P1')) * 10**6 =e= pi * Din('ORC','hot_IF','P1','cold_IF') * L('ORC','P1') * U * delta_T ;
+
+Constraint_9.. tcm('P1',firstKh) =e= tcmout('P1') ;
+Constraint_10(i).. t_h('P1',i,firstKh) =e= tin_h('P1',i) ;
+Constraint_12.. tcm('P1',lastKh) =e= tcmin('P1') ;
+Constraint_14(i).. F_h('P1',i) * (tin_h('P1',i) - tout_h('P1',i)) =e= sum(sth, qc('P1',i,sth)) + qu_h('P1',i) ;
+Constraint_16(i,k_h)$sth(k_h).. t_h('P1',i,k_h) =g= t_h('P1',i,k_h+1) ;
+Constraint_19(k_h)$sth(k_h).. tcm('P1',k_h) =g= tcm('P1',k_h+1) ;
+Constraint_19a.. thmin('ORC') =g= thminter_ORC_evap_1 ;
+Constraint_19b.. thminter_ORC_evap_1 =g= thmout_ORC_evap_1 ;
+Constraint_19c.. tinter_ORC_cond_coolant_1 =g= TIN_ORC_cond_coolant_1 ;
+Constraint_19d.. tout_ORC_cond_coolant_1 =g= tinter_ORC_cond_coolant_1 ;
+Constraint_19e.. thmin('ORC') =g= thminter_ORC_evap_2 ;
+Constraint_19f.. thminter_ORC_evap_2 =g= thmout_ORC_evap_2 ;
+Constraint_19g.. tinter_ORC_cond_coolant_2 =g= TIN_ORC_cond_coolant_2 ;
+Constraint_19h.. tout_ORC_cond_coolant_2 =g= tinter_ORC_cond_coolant_2 ;
+
+Constraint_20c.. m_ORC_evap_1 * (thmin('ORC') - thmout_ORC_evap_1) =e= q_ORC_evap_1 ;
+Constraint_20d.. m_ORC_evap_2 * (thmin('ORC') - thmout_ORC_evap_2) =e= q_ORC_evap_2 ;
+Constraint_21(k_h)$sth(k_h).. Mc('P1') * (tcm('P1',k_h) - tcm('P1',k_h+1)) =e= sum(i,qc('P1',i,k_h)) ;
+
+Constraint_22(i,k_h)$sth(k_h).. F_h('P1',i) * (t_h('P1',i,k_h) - t_h('P1',i,k_h+1)) =e= qc('P1',i,k_h) ;
+
+Constraint_24c.. zorc_1 =e= q_ORC_evap_1 / (q_ORC_evap_1 + delta) ;
+Constraint_24d.. zorc_2 =e= q_ORC_evap_2 / (q_ORC_evap_2 + delta) ;
+Constraint_25(i,k_h)$sth(k_h).. zc('P1',i,k_h) =e= qc('P1',i,k_h) / (qc('P1',i,k_h) + delta) ;
+
+Constraint_28(i,k_h)$sth(k_h).. dtc('P1',i,k_h) =l= t_h('P1',i,k_h) - tcm('P1',k_h) + (1 - zc('P1',i,k_h)) * gamma_c('P1',i) ;
+Constraint_29(i,k_h)$sth(k_h).. dtc('P1',i,k_h+1) =l= t_h('P1',i,k_h+1) - tcm('P1',k_h+1) + (1 - zc('P1',i,k_h)) * gamma_c('P1',i) ;
+Constraint_34(i).. qu_h('P1',i) =e= F_h('P1',i) * (t_h('P1',i,lastKh) - tout_h('P1',i)) ;
+
+Constraint_36(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Din(p,s,pp,ss) =e= (6.05*10**(-4) * Hy * C_power * (m(p,s,pp,ss) * 1000 / cp)**2.84 * mu**0.16 * rho**(-2) / (etta * n_pipe * B_pipe * (1 + F) * (Af + b_maint)))**(1/(4.84+n_pipe)) ;
+
+Constraint_39(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Pl(p,s,pp,ss) =e= 4.7 * Din(p,s,pp,ss)**1.7 ;
+
+Constraint_40(p,s,pp,ss)$(plant_IF(p,s,pp,ss) and plant_connect(p,pp)).. Piping(p,s,pp,ss) =e= Af * L(p,pp) * Pl(p,s,pp,ss) * CEPCI_2024_pipe / CEPCI_2006_pipe ;
+
+Constraint_41(p,s,pp,ss)$plant_IF(p,s,pp,ss).. v(p,s,pp,ss) * cp * pi * rho * Din(p,s,pp,ss) * Din(p,s,pp,ss) =e= 4 * m(p,s,pp,ss) * 1000 ;
+Constraint_42(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Re(p,s,pp,ss) *  mu * 1000 =e= rho * Din(p,s,pp,ss) * v(p,s,pp,ss) ;
+Constraint_43(p,s,pp,ss)$plant_IF(p,s,pp,ss).. fr(p,s,pp,ss) * (Re(p,s,pp,ss) * 1000)**0.2 =e= 0.046 ;
+
+Constraint_44(p,s,pp,ss)$(plant_IF(p,s,pp,ss) and plant_connect(p,pp)).. delta_P(p,s,pp,ss) * Din(p,s,pp,ss) * 1000 =e= 2 * fr(p,s,pp,ss) * L(p,pp) * rho * v(p,s,pp,ss) * v(p,s,pp,ss) ;
+    
+Constraint_45(p,s,pp,ss)$plant_IF(p,s,pp,ss).. log10(Pumpcapital(p,s,pp,ss) * 1000 + delta) =e= y(p,s,pp,ss)*K1_pump + K2_pump*log10(Q(p,s,pp,ss)+delta) + K3_pump*log10(Q(p,s,pp,ss)+delta)*log10(Q(p,s,pp,ss)+delta) ;
+
+Constraint_46(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Q(p,s,pp,ss) * cp * rho * etta =e= m(p,s,pp,ss) * delta_P(p,s,pp,ss) * 1000 ;
+
+Constraint_47(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Pumpoperation(p,s,pp,ss) * 1000 =e= C_power * Hy * Q(p,s,pp,ss);
+
+Constraint_48(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Pumping(p,s,pp,ss) =e= Pumpoperation(p,s,pp,ss) + Af * Pumpcapital(p,s,pp,ss) * CEPCI_2024_plant / CEPCI_2001_plant ;
+
+Constraint_49(i,k_h).. qc('P1',i,k_h)*1000*(ho**(-1)+h_h('P1',i)**(-1)) =e= A_h('P1',i,k_h)*((dtc('P1',i,k_h)*dtc('P1',i,k_h+1)*0.5*(dtc('P1',i,k_h)+dtc('P1',i,k_h+1)))**0.33333) ;
+
+Constraint_49a(i,k_h)$sth(k_h).. log10(HEX_h_cost('P1',i,k_h)*1000+delta) =e= zc('P1',i,k_h)*K1_HEX + K2_HEX*log10(A_h('P1',i,k_h)+delta) + K3_HEX*log10(A_h('P1',i,k_h)+delta)*log10(A_h('P1',i,k_h)+delta) ;
+
+Constraint_51a.. Tcond =e= T1_1 ;
+Constraint_51b.. Tcond =e= T1_2 ;
+Constraint_52a.. Tcond =e= T6_1 ;
+Constraint_52b.. Tcond =e= T6_2 ;
+Constraint_53a.. Tevap =e= T3_1 ;
+Constraint_53b.. Tevap =e= T3_2 ;
+Constraint_54a.. Tevap =e= T4_1 ;
+Constraint_54b.. Tevap =e= T4_2 ;
+Constraint_55.. Pcond =e= 0.0106 * Tcond - 0.1797 ;
+Constraint_56.. Pevap =e= 0.0287 * Tevap - 1.5297 ;
+Constraint_57a.. h1_1 =e= 1.385 * Tcond + 196.8 ;
+Constraint_57b.. h1_2 =e= 1.385 * Tcond + 196.8 ;
+Constraint_58a.. s1_1 =e= 0.0043 * Tcond + 1.0077 ;
+Constraint_58b.. s1_2 =e= 0.0043 * Tcond + 1.0077 ;
+Constraint_59a.. s2_1 =e= s1_1 ;
+Constraint_59b.. s2_2 =e= s1_2 ;
+Constraint_60a.. T2_1 =e= -236.6779 + 0.4335 * Pevap + 234.7105 * s2_1 ;
+Constraint_60b.. T2_2 =e= -236.6779 + 0.4335 * Pevap + 234.7105 * s2_2 ;
+Constraint_61a.. h2_1 =e= -129.1998 + 0.7871 * Pevap + 323.5453 * s2_1 ;
+Constraint_61b.. h2_2 =e= -129.1998 + 0.7871 * Pevap + 323.5453 * s2_2 ;
+Constraint_62a.. h3_1 =e= 1.5929 * Tevap + 181.23 ;
+Constraint_62b.. h3_2 =e= 1.5929 * Tevap + 181.23 ;
+Constraint_63a.. h4_1 =e= -0.0036 * Tevap * Tevap + 1.2645 * Tevap + 384.94 ;
+Constraint_63b.. h4_2 =e= -0.0036 * Tevap * Tevap + 1.2645 * Tevap + 384.94 ;
+Constraint_64a.. s4_1 =e= -0.000006 * Tevap * Tevap + 0.0016 * Tevap + 1.6934 ;
+Constraint_64b.. s4_2 =e= -0.000006 * Tevap * Tevap + 0.0016 * Tevap + 1.6934 ;
+Constraint_65a.. s5_1 =e= s4_1 ;
+Constraint_65b.. s5_2 =e= s4_2 ;
+Constraint_66a.. T5_1 =e= -565.2355 + 76.9486 * Pcond + 333.2629 * s5_1 ;
+Constraint_66b.. T5_2 =e= -565.2355 + 76.9486 * Pcond + 333.2629 * s5_2 ;
+Constraint_67a.. h5_1 =e= -161.4453 + 53.9855 * Pcond + 331.0438 * s5_1 ;
+Constraint_67b.. h5_2 =e= -161.4453 + 53.9855 * Pcond + 331.0438 * s5_2 ;
+Constraint_68a.. h6_1 =e= 0.7256 * Tcond + 405.62 ;
+Constraint_68b.. h6_2 =e= 0.7256 * Tcond + 405.62 ;
+Constraint_69a.. q_ORC_evap_1 =e= q_ORC_evap_subcooled_1 + q_ORC_evap_wet_1 ;
+Constraint_69b.. q_ORC_evap_2 =e= q_ORC_evap_subcooled_2 + q_ORC_evap_wet_2 ;
+Constraint_70a.. q_ORC_evap_subcooled_1 * 1000 =e= m_ORC_WF_1 * (h3_1 - h2_1) ;
+Constraint_70b.. q_ORC_evap_subcooled_2 * 1000 =e= m_ORC_WF_2 * (h3_2 - h2_2) ;
+Constraint_71a.. q_ORC_evap_wet_1 * 1000 =e= m_ORC_WF_1 * (h4_1 - h3_1) ;
+Constraint_71b.. q_ORC_evap_wet_2 * 1000 =e= m_ORC_WF_2 * (h4_2 - h3_2) ;
+Constraint_72a.. E_ORC_turb_1 * 1000 =e= m_ORC_WF_1 * (h4_1 - h5_1) ;
+Constraint_72b.. E_ORC_turb_2 * 1000 =e= m_ORC_WF_2 * (h4_2 - h5_2) ;
+Constraint_73a.. E_ORC_pump_1 * 1000 =e= m_ORC_WF_1 * (h2_1 - h1_1) ;
+Constraint_73b.. E_ORC_pump_2 * 1000 =e= m_ORC_WF_2 * (h2_2 - h1_2) ;
+Constraint_74a.. q_ORC_cond_1 =e= q_ORC_evap_1 + E_ORC_pump_1 - E_ORC_turb_1 ;
+Constraint_74b.. q_ORC_cond_2 =e= q_ORC_evap_2 + E_ORC_pump_2 - E_ORC_turb_2 ;
+Constraint_75a.. q_ORC_cond_1 =e= q_ORC_cond_superheat_1 + q_ORC_cond_wet_1 ;
+Constraint_75b.. q_ORC_cond_2 =e= q_ORC_cond_superheat_2 + q_ORC_cond_wet_2 ;
+Constraint_76a.. q_ORC_cond_superheat_1 * 1000 =e= m_ORC_WF_1 * (h5_1 - h6_1) ;
+Constraint_76b.. q_ORC_cond_superheat_2 * 1000 =e= m_ORC_WF_2 * (h5_2 - h6_2) ;
+Constraint_77a.. q_ORC_cond_wet_1 * 1000 =e= m_ORC_WF_1 * (h6_1 - h1_1) ;
+Constraint_77b.. q_ORC_cond_wet_2 * 1000 =e= m_ORC_WF_2 * (h6_2 - h1_2) ;
+Constraint_78a.. dt_in_ORC_evap_1 =l= thmout_ORC_evap_1 - T2_1 + (1 - zorc_1) * gamma_h_ORC_evap ;
+Constraint_78b.. dt_in_ORC_evap_2 =l= thmout_ORC_evap_2 - T2_2 + (1 - zorc_2) * gamma_h_ORC_evap ; 
+Constraint_79a.. dt_inter_ORC_evap_1 =l= thminter_ORC_evap_1 - T3_1 + (1 - zorc_1) * gamma_h_ORC_evap ;
+Constraint_79b.. dt_inter_ORC_evap_2 =l= thminter_ORC_evap_2 - T3_2 + (1 - zorc_2) * gamma_h_ORC_evap ;
+Constraint_80a.. dt_out_ORC_evap_1 =l= thmin('ORC') - T4_1 + (1 - zorc_1) * gamma_h_ORC_evap ;
+Constraint_80b.. dt_out_ORC_evap_2 =l= thmin('ORC') - T4_2 + (1 - zorc_2) * gamma_h_ORC_evap ;
+Constraint_81a.. thminter_ORC_evap_1 - T3_1 =g= EMAT_ORC ;
+Constraint_81b.. thminter_ORC_evap_2 - T3_2 =g= EMAT_ORC ;
+Constraint_82a.. dt_in_ORC_cond_1 =l= T5_1 - tout_ORC_cond_coolant_1 + (1 - zorc_1) * gamma_coolant_ORC_cond ;
+Constraint_82b.. dt_in_ORC_cond_2 =l= T5_2 - tout_ORC_cond_coolant_2 + (1 - zorc_2) * gamma_coolant_ORC_cond ;
+Constraint_83a.. dt_inter_ORC_cond_1 =l= T6_1 - tinter_ORC_cond_coolant_1 + (1 - zorc_1) * gamma_coolant_ORC_cond ;
+Constraint_83b.. dt_inter_ORC_cond_2 =l= T6_2 - tinter_ORC_cond_coolant_2 + (1 - zorc_2) * gamma_coolant_ORC_cond ;
+Constraint_84a.. dt_out_ORC_cond_1 =l= T1_1 - TIN_ORC_cond_coolant_1 + (1 - zorc_1) * gamma_coolant_ORC_cond ;
+Constraint_84b.. dt_out_ORC_cond_2 =l= T1_2 - TIN_ORC_cond_coolant_2 + (1 - zorc_2) * gamma_coolant_ORC_cond ; 
+Constraint_85a.. T6_1 - tinter_ORC_cond_coolant_1 =g= EMAT_ORC ;
+Constraint_85b.. T6_2 - tinter_ORC_cond_coolant_2 =g= EMAT_ORC ;
+Constraint_86a.. q_ORC_evap_subcooled_1 * 1000 * (ho**(-1)+h_ORC**(-1)) =e= A_ORC_evap_subcooled_1*(dt_in_ORC_evap_1*dt_inter_ORC_evap_1*0.5*(dt_in_ORC_evap_1+dt_inter_ORC_evap_1))**0.33333 ;
+Constraint_86b.. q_ORC_evap_subcooled_2 * 1000 * (ho**(-1)+h_ORC**(-1)) =e= A_ORC_evap_subcooled_2*(dt_in_ORC_evap_2*dt_inter_ORC_evap_2*0.5*(dt_in_ORC_evap_2+dt_inter_ORC_evap_2))**0.33333 ;
+Constraint_87a.. q_ORC_evap_wet_1 * 1000 * (ho**(-1)+h_ORC**(-1)) =e= A_ORC_evap_wet_1*(dt_inter_ORC_evap_1*dt_out_ORC_evap_1*0.5*(dt_inter_ORC_evap_1+dt_out_ORC_evap_1))**0.33333 ;
+Constraint_87b.. q_ORC_evap_wet_2 * 1000 * (ho**(-1)+h_ORC**(-1)) =e= A_ORC_evap_wet_2*(dt_inter_ORC_evap_2*dt_out_ORC_evap_2*0.5*(dt_inter_ORC_evap_2+dt_out_ORC_evap_2))**0.33333 ;
+Constraint_88a.. q_ORC_cond_superheat_1 * 1000 * (h_ORC_cond_coolant**(-1)+h_ORC**(-1)) =e= A_ORC_cond_superheat_1*(dt_inter_ORC_cond_1*dt_in_ORC_cond_1*0.5*(dt_inter_ORC_cond_1+dt_in_ORC_cond_1))**0.33333 ;
+Constraint_88b.. q_ORC_cond_superheat_2 * 1000 * (h_ORC_cond_coolant**(-1)+h_ORC**(-1)) =e= A_ORC_cond_superheat_2*(dt_inter_ORC_cond_2*dt_in_ORC_cond_2*0.5*(dt_inter_ORC_cond_2+dt_in_ORC_cond_2))**0.33333 ;
+Constraint_89a.. q_ORC_cond_wet_1 * 1000 * (h_ORC_cond_coolant**(-1)+h_ORC**(-1)) =e= A_ORC_cond_wet_1*(dt_inter_ORC_cond_1*dt_out_ORC_cond_1*0.5*(dt_inter_ORC_cond_1+dt_out_ORC_cond_1))**0.33333 ;
+Constraint_89b.. q_ORC_cond_wet_2 * 1000 * (h_ORC_cond_coolant**(-1)+h_ORC**(-1)) =e= A_ORC_cond_wet_2*(dt_inter_ORC_cond_2*dt_out_ORC_cond_2*0.5*(dt_inter_ORC_cond_2+dt_out_ORC_cond_2))**0.33333 ;
+Constraint_90a.. log10(ORC_evap_subcooled_cost_1*1000+delta) =e= zorc_1*K1_HEX+K2_HEX*log10(A_ORC_evap_subcooled_1+delta)+K3_HEX*log10(A_ORC_evap_subcooled_1+delta)*log10(A_ORC_evap_subcooled_1+delta) ;
+Constraint_90b.. log10(ORC_evap_subcooled_cost_2*1000+delta) =e= zorc_2*K1_HEX+K2_HEX*log10(A_ORC_evap_subcooled_2+delta)+K3_HEX*log10(A_ORC_evap_subcooled_2+delta)*log10(A_ORC_evap_subcooled_2+delta) ;
+Constraint_91a.. log10(ORC_evap_wet_cost_1*1000+delta) =e= zorc_1*K1_HEX+K2_HEX*log10(A_ORC_evap_wet_1+delta)+K3_HEX*log10(A_ORC_evap_wet_1+delta)*log10(A_ORC_evap_wet_1+delta) ;
+Constraint_91b.. log10(ORC_evap_wet_cost_2*1000+delta) =e= zorc_2*K1_HEX+K2_HEX*log10(A_ORC_evap_wet_2+delta)+K3_HEX*log10(A_ORC_evap_wet_2+delta)*log10(A_ORC_evap_wet_2+delta) ;
+Constraint_92a.. log10(ORC_cond_superheat_cost_1*1000+delta) =e= zorc_1*K1_HEX+K2_HEX*log10(A_ORC_cond_superheat_1+delta)+K3_HEX*log10(A_ORC_cond_superheat_1+delta)*log10(A_ORC_cond_superheat_1+delta) ;
+Constraint_92b.. log10(ORC_cond_superheat_cost_2*1000+delta) =e= zorc_2*K1_HEX+K2_HEX*log10(A_ORC_cond_superheat_2+delta)+K3_HEX*log10(A_ORC_cond_superheat_2+delta)*log10(A_ORC_cond_superheat_2+delta) ;
+Constraint_93a.. log10(ORC_cond_wet_cost_1*1000+delta) =e= zorc_1*K1_HEX+K2_HEX*log10(A_ORC_cond_wet_1+delta)+K3_HEX*log10(A_ORC_cond_wet_1+delta)*log10(A_ORC_cond_wet_1+delta) ;
+Constraint_93b.. log10(ORC_cond_wet_cost_2*1000+delta) =e= zorc_2*K1_HEX+K2_HEX*log10(A_ORC_cond_wet_2+delta)+K3_HEX*log10(A_ORC_cond_wet_2+delta)*log10(A_ORC_cond_wet_2+delta) ;
+Constraint_94a.. log10(Cost_ORC_pump_1*1000+delta) =e= zorc_1*K1_pump+K2_pump*log10(E_ORC_pump_1*1000/etta+delta)+K3_pump*log10(E_ORC_pump_1*1000/etta+delta)*log10(E_ORC_pump_1*1000/etta+delta) ;
+Constraint_94b.. log10(Cost_ORC_pump_2*1000+delta) =e= zorc_2*K1_pump+K2_pump*log10(E_ORC_pump_2*1000/etta+delta)+K3_pump*log10(E_ORC_pump_2*1000/etta+delta)*log10(E_ORC_pump_2*1000/etta+delta) ;
+Constraint_95a.. log10(Cost_ORC_turb_1*1000+delta) =e= zorc_1*K1_turb+K2_turb*log10(E_ORC_turb_1*1000+delta)+K3_turb*log10(E_ORC_turb_1*1000+delta)*log10(E_ORC_turb_1*1000+delta) ;
+Constraint_95b.. log10(Cost_ORC_turb_2*1000+delta) =e= zorc_2*K1_turb+K2_turb*log10(E_ORC_turb_2*1000+delta)+K3_turb*log10(E_ORC_turb_2*1000+delta)*log10(E_ORC_turb_2*1000+delta) ; 
+Constraint_96a.. Revenue_ORC_1 * 1000 =e= Hy * Pe * E_ORC_turb_1 * 1000 ;
+Constraint_96b.. Revenue_ORC_2 * 1000 =e= Hy * Pe * E_ORC_turb_2 * 1000 ;
+Constraint_97a.. Cost_ORC_pump_power_cons_1 * 1000 =e= Hy * C_power * E_ORC_pump_1 * 1000 / etta ;
+Constraint_97b.. Cost_ORC_pump_power_cons_2 * 1000 =e= Hy * C_power * E_ORC_pump_2 * 1000 / etta ;
+Constraint_98a.. q_ORC_cond_wet_1 * 1000 =e= m_ORC_cond_coolant_1 * cp_cond_coolant * (tinter_ORC_cond_coolant_1 - TIN_ORC_cond_coolant_1) ;
+Constraint_98b.. q_ORC_cond_wet_2 * 1000 =e= m_ORC_cond_coolant_2 * cp_cond_coolant * (tinter_ORC_cond_coolant_2 - TIN_ORC_cond_coolant_2) ;
+Constraint_99a.. q_ORC_cond_superheat_1 * 1000 =e= m_ORC_cond_coolant_1 * cp_cond_coolant * (tout_ORC_cond_coolant_1 - tinter_ORC_cond_coolant_1) ;
+Constraint_99b.. q_ORC_cond_superheat_2 * 1000 =e= m_ORC_cond_coolant_2 * cp_cond_coolant * (tout_ORC_cond_coolant_2 - tinter_ORC_cond_coolant_2) ;
+Constraint_100a.. q_ORC_evap_subcooled_1 =e= m_ORC_evap_1 * (thminter_ORC_evap_1 - thmout_ORC_evap_1) ;
+Constraint_100b.. q_ORC_evap_subcooled_2 =e= m_ORC_evap_2 * (thminter_ORC_evap_2 - thmout_ORC_evap_2) ;
+Constraint_101a.. q_ORC_evap_wet_1 =e= m_ORC_evap_1 * (thmin('ORC') - thminter_ORC_evap_1) ;
+Constraint_101b.. q_ORC_evap_wet_2 =e= m_ORC_evap_2 * (thmin('ORC') - thminter_ORC_evap_2) ; 
+
+Objective.. TAC =e= CU_cow*sum(i,qu_h('P1',i))*1000 + CU_orc_cond*q_ORC_cond_1*1000 + CU_orc_cond*q_ORC_cond_2*1000
+                  + sum((p,s,pp,ss)$plant_IF(p,s,pp,ss),Piping(p,s,pp,ss))
+                  + sum((p,s,pp,ss)$plant_IF(p,s,pp,ss),Pumping(p,s,pp,ss))
+                  + Af * sum((i,k_h),HEX_h_cost('P1',i,k_h)) * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_evap_subcooled_cost_1 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_evap_subcooled_cost_2 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_evap_wet_cost_1 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_evap_wet_cost_2 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_cond_superheat_cost_1 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_cond_superheat_cost_2 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_cond_wet_cost_1 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * ORC_cond_wet_cost_2 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * Cost_ORC_pump_1 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * Cost_ORC_pump_2 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * Cost_ORC_turb_1 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * Cost_ORC_turb_2 * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Cost_ORC_pump_power_cons_1 - Revenue_ORC_1
+                  + Cost_ORC_pump_power_cons_2 - Revenue_ORC_2; 
+                  
+*Variable bounds
+dtc.lo('P1',i,k_h) = 10 ;
+dtc.up('P1',i,k_h) = 99 ;
+Din.up(p,s,pp,ss) = 0.6 ;
+m.up(p,s,pp,ss) = 1 ;
+Mc.up(p) = 1 ;
+Mh.up(p) = 1 ;
+qc.up('P1',i,k_h) = 30 ;
+qu_h.up('P1',i) = 30 ;
+Q.up(p,s,pp,ss) = 300 ;
+A_h.up('P1',i,k_h) = 1000 ;
+Pumpcapital.up(p,s,pp,ss) = 30 ;
+HEX_h_cost.up('P1',i,k_h) = 77 ;
+
+Tcond.lo = 40 ;
+Tcond.up = 60 ;
+Tevap.lo = 70 ;
+Tevap.up = 130 ;
+tout_ORC_cond_coolant_1.up = 35 ;
+tout_ORC_cond_coolant_2.up = 35 ;
+thmout_ORC_evap_1.up = 70 ;
+thmout_ORC_evap_2.up = 70 ;
+dt_in_ORC_evap_1.lo = 10 ;
+dt_in_ORC_evap_2.lo = 10 ;
+dt_inter_ORC_evap_1.lo = 10 ;
+dt_inter_ORC_evap_2.lo = 10 ;
+dt_out_ORC_evap_1.lo = 10 ;
+dt_out_ORC_evap_2.lo = 10 ;
+dt_in_ORC_evap_1.up = 99 ;
+dt_in_ORC_evap_2.up = 99 ;
+dt_inter_ORC_evap_1.up = 99 ;
+dt_inter_ORC_evap_2.up = 99 ;
+dt_out_ORC_evap_1.up = 99 ;
+dt_out_ORC_evap_2.up = 99 ;
+dt_in_ORC_cond_1.lo = 10 ;
+dt_in_ORC_cond_2.lo = 10 ;
+dt_inter_ORC_cond_1.lo = 10 ;
+dt_inter_ORC_cond_2.lo = 10 ;
+dt_out_ORC_cond_1.lo = 10 ;
+dt_out_ORC_cond_2.lo = 10 ;
+dt_in_ORC_cond_1.up = 99 ;
+dt_in_ORC_cond_2.up = 99 ;
+dt_inter_ORC_cond_1.up = 99 ;
+dt_inter_ORC_cond_2.up = 99 ;
+dt_out_ORC_cond_1.up = 99 ;
+dt_out_ORC_cond_2.up = 99 ;
+A_ORC_evap_subcooled_1.up = 1000 ;
+A_ORC_evap_subcooled_2.up = 1000 ;
+A_ORC_evap_wet_1.up = 1000 ;
+A_ORC_evap_wet_2.up = 1000 ;
+A_ORC_cond_superheat_1.up = 1000 ;
+A_ORC_cond_superheat_2.up = 1000 ;
+A_ORC_cond_wet_1.up = 1000 ;
+A_ORC_cond_wet_2.up = 1000 ;
+E_ORC_pump_1.up = 0.3 ;
+E_ORC_pump_2.up = 0.3 ;
+E_ORC_turb_1.up = 4 ;
+E_ORC_turb_2.up = 4 ;
+m_ORC_WF_1.up = 84 ;
+m_ORC_WF_2.up = 84 ;
+h1_1.lo = 252 ;
+h1_2.lo = 252 ;
+h1_1.up = 280 ;
+h1_2.up = 280 ;
+h2_1.lo = 252 ;
+h2_2.lo = 252 ;
+h2_1.up = 282 ;
+h2_2.up = 282 ;
+h3_1.lo = 294 ;
+h3_2.lo = 294 ;
+h3_1.up = 391 ;
+h3_2.up = 391 ;
+h4_1.lo = 456 ;
+h4_2.lo = 456 ;
+h4_1.up = 488 ;
+h4_2.up = 488 ;
+h5_1.lo = 439 ;
+h5_2.lo = 439 ;
+h5_1.up = 459 ;
+h5_2.up = 459 ;
+h6_1.lo = 434 ;
+h6_2.lo = 434 ;
+h6_1.up = 450 ;
+h6_2.up = 450 ;
+m_ORC_cond_coolant_1.up = 693.33 ;
+m_ORC_cond_coolant_2.up = 693.33 ;
+
+Model replica_model / all /;
+
+Option OptCR = 0.2;
+Option ResLim = 28000 ;
+
+Solve replica_model using NLP minimizing TAC;
