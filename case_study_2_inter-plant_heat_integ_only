@@ -1,0 +1,468 @@
+Sets
+    p       "Plants"                / P4, P5, P6           /
+    sink(p) "Heat sink plants"      / P5, P6               /
+    s       "Intermediate fluid"    / hot_IF, cold_IF           / ;
+    
+Alias (p,pp) ;
+Alias (s,ss) ;
+    
+Sets
+    i                   "Hot process stream"    / 4_s10, 4_s33, 4_s60     /
+    j                   "Cold process streams"  / 5_s44, 5_s50, 6_s15, 6_s29 /
+    j5(j)               "Plant 5 cold process streams"     / 5_s44, 5_s50 /
+    j6(j)               "Plant 6 cold process streams"     / 6_s15, 6_s29 / 
+    plant_IF(p,s,pp,ss) "Interconnections between plants and intermediate fluid"
+                                                / P4.cold_IF.P5.hot_IF,
+                                                  P5.hot_IF.P6.hot_IF,
+                                                  P6.hot_IF.P4.cold_IF  /
+    plant_connect(p,pp) "Possible interconnections between plants"
+                                                /   P4.P5,
+                                                    P5.P6,
+                                                    P6.P4  / ;
+    
+Scalars
+    Af                      "Annual factor for capital costs"                                           /   0.264       /
+    Hy                      "Total operation time of one year in hr/year"                               /   8000        /
+    cp                      "Intermediate fluid heat capacity flow rate in kJ/kg-K"                     /   2.2         /
+    ho                      "Intermediate fluid heat transfer coefficient in kW/m^2-K"                  /   1.5         /
+    Pe                      "Unitary buy-back price of produced electricity in $/kWh as of August 2024" /   0.08        /
+    etta                    "Pump efficiency"                                                           /   0.7         /
+    rho                     "Intermediate fluid density in kg/m^3"                                      /   862.2       /
+    mu                      "Intermediate fluid viscosity in Pa-s"                                      /   0.00021667  /
+    CU_cow                  "Cooling water utility cost in $1000/kW-yr"                                 /   0.01116     /
+    CU_lp                   "Low-pressure steam  utility cost in $1000/kW-yr"                           /   0.44308     /
+    CU_orc_cond             "Cooling water utility cost for the condenser in $1000/kw-yr"               /   0.01675     /
+    B_pipe                  "Piping cost parameter in $/m^1.7 units as of January 2006"                 /   4700        /
+    n_pipe                  "Piping cost sizing exponent as of January 2006"                            /   1.7         /
+    F                       "Cost of valves, fittings, and erection as a percentage of the pipe purchase cost"  /   1.5 /
+    b_maint                 "Annual pipeline maintenance cost as a percentage of the pipe capital cost" /   0.05        /
+    CEPCI_2001_plant        "Composite CEPCI as of May to December 2001"                                /   397         /
+    CEPCI_2010_plant        "Composite CEPCI as of January 2010"                                        /   532.9       /
+    CEPCI_2024_plant        "Composite CEPCI as of May 2024"                                            /   800.3       /
+    CEPCI_2006_pipe         "CEPCI for pipes as of January 2006"                                        /   655.9       /
+    CEPCI_2024_pipe         "CEPCI for pipes as of May 2024"                                            /   1357.1      /
+    CEPCI_2010_HEX          "CEPCI for heat exchangers as of January 2010"                              /   571.9       /
+    CEPCI_2024_HEX          "CEPCI for heat exchangers as of May 2024"                                  /   801.8       /
+    CEPCI_2010_pump         "CEPCI for pumps as of January 2010"                                        /   903         /
+    CEPCI_2024_pump         "CEPCI for pumps as of May 2024"                                            /   1543.2      /
+    cp_ORC                  "Specific heat of ORC working fluid in kJ/kg-K"                             /   1.36        /
+    rho_ORC                 "Specific heat of ORC working fluid in kg/m^3"                              /   1339        /
+    mu_ORC                  "Absolute viscosity of ORC working fluid in Pa-s"                           /   0.4027      /
+    Tmin                    "Minimum temperature of intermediate fluid in deg C"                        /   148          /
+    Tmax                    "Maximum temperature of intermediate fluid in deg C"                        /   390         /
+    psi                     "Upper bound of the hot intermediate fluid stream heat capacity flow rate"  /   20          /
+    epsilon                 "Pipeline insulation thickness in m"                                        /   0.127       /
+    U                       "Overall insulated pipeline heat transfer coefficient in W/m^2-K"           /   0.326       /
+    delta_T                 "Temperature difference between pipe wall and ambient air in deg C"         /   100         /
+    TIN_ORC_evap            "Temperature of the ORC working fluid at the evaporator inlet in deg C"     /   30          /
+    TOUT_ORC_evap           "Temperature of the ORC working fluid at the evaporator outlet in deg C"    /   100         /
+    TIN_ORC_cond            "Temperature of the ORC working fluid at the condenser inlet in deg C"      /   50.7        /
+    TOUT_ORC_cond           "Temperature of the ORC working fluid at the condenser outlet in deg C"     /   30          /
+    TIN_ORC_cond_coolant    "Temperature of the cooling water at the condenser inlet in deg C"          /   10          /
+    TOUT_ORC_cond_coolant   "Temperature of the cooling water at the condenser outlet in deg C"         /   20          /
+    etta_ORC_cycle          "ORC thermal efficiency"                                                    /   0.1252      /
+    etta_ORC_pump           "Percentage of pump power consumption relative to ORC power production"     /   0.06        /
+    EMAT_ORC                "Minimum temperature difference at the ORC evaporator and condenser"        /   10          /
+    delta                   "Small number added to the denominator to prevent division by zero"         /   0.000001    /
+    h_ORC                   "ORC working fluid heat transfer coefficient in kW/m^2-K"                   /   1           /
+    h_ORC_cond_coolant      "Heat transfer coefficient of condenser coolant in kW/m^2-K"                /   1           /
+    C_power                 "Unitary purchase cost of electricity in US$/kWh as of August 2024"         /   0.282       /
+    K1_pump                 "Pump capital cost parameter K1"                                            /   3.3892      /
+    K2_pump                 "Pump capital cost parameter K2"                                            /   0.0536      /
+    K3_pump                 "Pump capital cost parameter K3"                                            /   0.1538      /
+    K1_HEX                  "HEX capital cost parameter K1"                                             /   4.3247      /
+    K2_HEX                  "HEX capital cost parameter K2"                                             /   -0.303      /
+    K3_HEX                  "HEX capital cost parameter K3"                                             /   0.1634      /
+    K1_turb                 "Turbine capital cost parameter K1"                                         /   2.7051      /
+    K2_turb                 "Turbine capital cost parameter K2"                                         /   1.4398      /
+    K3_turb                 "Turbine capital cost parameter K3"                                         /   -0.1776     /;
+    
+Sets
+    k_h       "Plant 4 temperature locations = NOK + 1"             /   1*4     /
+    sth(k_h)  "Plant 4 superstructure stages"
+    k_c       "Plants 5 and 6 temperature locations = NOK + 1"            /   1*3     /
+    stc(k_c)  "Plants 5 and 6 superstructure stages"
+    
+Singleton Set
+    firstKh(k_h)   "First temperature location in Plant 4"
+    lastKh(k_h)    "Last temperature location in Plant 4"
+    firstKc(k_c)   "First temperature location in Plants 5 and 6"
+    lastKc(k_c)    "Last temperature location in Plants 5 and 6" ;
+    
+sth(k_h)     = yes$(ord(k_h) < card(k_h));
+firstKh(k_h) = yes$(ord(k_h) = 1);
+lastKh(k_h)  = yes$(ord(k_h) = card(k_h));
+
+stc(k_c)     = yes$(ord(k_c) < card(k_c));
+firstKc(k_c) = yes$(ord(k_c) = 1);
+lastKc(k_c)  = yes$(ord(k_c) = card(k_c));
+  
+Table tin_h(p,i)  "Supply temperature of hot process streams in deg C"
+                4_s10   4_s33   4_s60
+        P4      560     560     400  ;
+        
+Table tout_h(p,i) "Target temperature of hot process streams in deg C"
+                4_s10   4_s33   4_s60
+        P4      390     390     35  ;
+        
+Table tin_c(p,j)  "Supply temperatures of cold process streams in deg C"
+                5_s44   5_s50   6_s15   6_s29  
+        P5      170     170            
+        P6                      138     138;
+        
+Table tout_c(p,j) "Target temperatures of cold process streams in deg C"
+                5_s44   5_s50   6_s15   6_s29
+        P5      171     171     
+        P6                      139     139 ;
+        
+Table h_h(p,i)    "Heat transfer coefficients of hot process streams in kW/m^2-K"
+                4_s10   4_s33   4_s60 
+        P4      1       1       1      ;
+        
+Table h_c(p,j)    "Heat transfer coefficients of cold process streams in kW/m^2-K"
+                5_s44   5_s50   6_s15   6_s29
+        P5      1       1          
+        P6                      1       1 ;
+        
+Table F_h(p,i)    "Hot process stream heat capacity flow rates in MW/K"
+                4_s10   4_s33   4_s60 
+        P4      0.0086  0.053   0.0086  ;
+        
+Table F_c(p,j)    "Cold process stream heat capacity flow rates in MW/K"
+                5_s44   5_s50   6_s15   6_s29
+        P5      3.057   1.132   
+        P6                      1.5604  0.1517 ;
+        
+Table ech(p,i)  "Heat content of hot process streams in MW"
+                4_s10   4_s33   4_s60 
+        P4      1.468   9.018   3.126  ;
+        
+Table ecc(p,j)  "Heat content of cold process streams in MW"
+                5_s44   5_s50   6_s15   6_s29
+        P5      3.057   1.132   
+        P6                      1.5604  0.1517 ;
+        
+Table EMAT_h(p,i) "Minimum temperature difference between hot process stream and cold intermediate fluid in deg C"
+                4_s10   4_s33   4_s60  
+        P4      10      10      10    ;
+        
+Table EMAT_c(p,j) "Minimum temperature difference between cold process stream and hot intermediate fluid in deg C"
+                5_s44   5_s50   6_s15   6_s29
+        P5      10      10            
+        P6                      10      10 ;
+        
+Table L(p,p)    "Distance between plants in m"
+                P4          P5          P6          
+        P4                  2549.51     2865.31             
+        P5      2549.51                 1664.33                
+        P6      2865.31     1664.33            ;
+        
+Parameter gamma_c(p,i)  "Upper bound of temperature difference between hot process stream and cold intermediate fluid"  ;
+gamma_c(p,i)$(tin_h(p,i) - Tmin < EMAT_h(p,i)) = abs(tin_h(p,i) - Tmin) + EMAT_h(p,i) ;
+gamma_c(p,i)$(tin_h(p,i) - Tmin >= EMAT_h(p,i)) = max(0, tin_h(p,i) - Tmin, Tmax - tout_h(p,i)) ;
+
+Parameter gamma_h(p,j)  "Upper bound of temperature difference between cold process stream and hot intermediate fluid"  ;
+gamma_h(p,j)$(Tmax - tin_c(p,j) < EMAT_c(p,j)) = abs(Tmax - tin_c(p,j) + EMAT_c(p,j)) ;
+gamma_h(p,j)$(Tmax - tin_c(p,j) >= EMAT_c(p,j)) = max(0, Tmax - tin_c(p,j), tout_c(p,j) - Tmin) ;
+
+    
+Positive Variables
+    y(p,s,pp,ss)            "Denotes existence of connection between two plants"
+    zc(p,i,k_h)             "Denotes existence of heat exchanger between hot process stream and cold intermediate fluid"
+    zh(p,j,k_c)             "Denotes existence of heat exchanger between cold process stream and hot intermediate fluid"
+    m(p,s,pp,ss)            "Intermediate fluid stream heat capacity flow rate in MW/K"
+    Mh(p)                     "Hot intermediate fluid stream heat capacity flow rate in MW/K"
+    Mc(p)                     "Cold intermediate fluid stream heat capacity flow rate in MW/K"
+    tcmin(p)                  "Inlet temperature of cold intermediate fluid in deg C"
+    tcmout(p)                 "Outlet temperature of cold intermediate fluid in deg C"
+    thmin(p)                  "Inlet temperature of hot intermediate fluid in deg C"
+    thmout(p)                 "Outlet temperature of hot intermediate fluid in deg C"
+    thm(p,k_c)                "Hot intermediate fluid temperature in deg C"
+    tcm(p,k_h)                "Cold intermediate fluid temperature in deg C"
+    t_h(p,i,k_h)              "Hot process stream temperature in deg C"
+    t_c(p,j,k_c)              "Cold process stream temperature in deg C"
+    qc(p,i,k_h)               "Heat transferred between cold intermediate fluid and hot process stream in MW"
+    qh(p,j,k_c)               "Heat transferred between hot intermediate fluid and cold process stream in MW"
+    qu_h(p,i)                 "Cold utility load in MW"
+    qu_c(p,j)                 "Hot utility load in MW"
+    dth(p,j,k_c)              "Temperature difference between hot intermediate fluid and cold process stream in deg C"
+    dtc(p,i,k_h)              "Temperature difference between cold intermediate fluid and hot process stream in deg C"
+    Din(p,s,pp,ss)              "Pipe inner diameter for intermediate fluid in m"
+
+    Pl(p,s,pp,ss)               "Capital cost of pipeline per unit length in 1000$/m"
+    Piping(p,s,pp,ss)           "Annualized piping cost for intermediate fluid in 1000$/yr"
+    
+    v(p,s,pp,ss)                "Velocity of the intermediate fluid in m/s"
+    Re(p,s,pp,ss)               "Reynolds number of the intermediate fluid in 1000 units"
+    fr(p,s,pp,ss)               "Friction factor of the intermediate fluid"
+    
+    delta_P(p,s,pp,ss)          "IHTF pressure drop along the pipeline in kPa"
+    Q(p,s,pp,ss)                "Pump power consumption in kW"
+
+    Pumpcapital(p,s,pp,ss)      "Capital cost of pump in 1000$"
+
+    Pumpoperation(p,s,pp,ss)    "Annualized pump operation cost in 1000$/yr"
+    Pumping(p,s,pp,ss)          "Annualized pumping cost for intermediate fluid in 1000$/yr"
+    A_h(p,i,k_h)              "HEX area between cold intermediate fluid and hot process stream in m^2"
+    A_c(p,j,k_c)              "HEX area between hot intermediate fluid and cold process stream"
+
+    HEX_h_cost(p,i,k_h)         "Capital cost of HEX between a hot process stream and cold IHTF at each superstructure stage in $1000"
+    HEX_c_cost(p,j,k_c)         "Capital cost of HEX between a cold process stream and hot IHTF at each superstructure stage in $1000" ;
+
+Variable
+    TAC                     "Total annualized cost" ;
+    
+Equations
+    Constraint_1a           "Mass balance for the hot intermediate fluid splitter of Plant 5"
+    Constraint_1b           "Mass balance for the hot intermediate fluid splitter of Plant 6"
+    Constraint_2            "Mass balance for the cold intermediate fluid splitter of Plant 4"
+    
+    Constraint_3a           "Logical constraint for the connection between Plant 4 and Plant 5"
+    Constraint_3b           "Logical constraint for the connection between Plant 5 and Plant 6"
+    Constraint_3d           "Logical constraint for the connection between Plant 6 and Plant 4"
+    
+    Constraint_4a           "Mass balance for the hot intermediate fluid mixer of Plant 5"
+    Constraint_4b           "Mass balance for the hot intermediate fluid mixer of Plant 6"
+    Constraint_5            "Mass balance for the cold intermediate fluid mixer of Plant 4"
+    
+    Constraint_6a           "Heat loss from the pipeline connecting Plants 4 and 5"
+    Constraint_6b           "Heat loss from the pipeline connecting Plants 5 and 6"
+    Constraint_7b           "Heat loss from the pipeline connecting the ORC plant and Plant 4"
+    
+    Constraint_8a           "Assignment of hot intermediate fluid inlet temperature at the start of the superstructure of Plant 5"
+    Constraint_8b           "Assignment of hot intermediate fluid inlet temperature at the start of the superstructure of Plant 6"
+    
+    Constraint_9            "Assignment of cold intermediate fluid outlet temperature at the start of the superstructure of Plant 4"
+    
+    Constraint_10(i)           "Assignment of hot process stream supply temperature at the start of the superstructure of Plant 4"
+    
+    Constraint_11a          "Assignment of hot intermediate fluid outlet temperature at the end of the superstructure of Plant 5"
+    Constraint_11b          "Assignment of hot intermediate fluid outlet temperature at the end of the superstructure of Plant 6"
+    
+    Constraint_12           "Assignment of cold intermediate fluid inlet temperature at the end of the superstructure of Plant 4"
+    
+    Constraint_13a(j)          "Assignment of cold process stream supply temperature at the end of the superstructure of Plant 5"
+    Constraint_13b(j)          "Assignment of cold process stream supply temperature at the end of the superstructure of Plant 6"
+    
+    Constraint_14(i)        "Overall energy balance constraint for each hot process stream in Plant 4"
+    
+    Constraint_15a(j)          "Overall energy balance constraint for the cold process stream in Plant 5"
+    Constraint_15b(j)          "Overall energy balance constraint for the cold process stream in Plant 6"
+    
+    Constraint_16(i,k_h)      "Monotonic decrease of hot process stream temperature as stage number increases in Plant 4"
+    
+    Constraint_17a(j,k_c)       "Monotonic decrease of cold process stream temperature as stage number increases in Plant 5"
+    Constraint_17b(j,k_c)       "Monotonic decrease of cold process stream temperature as stage number increases in Plant 6"
+    
+    Constraint_18a(k_c)     "Monotonic decrease of hot intermediate fluid temperature as stage number increases in Plant 5"
+    Constraint_18b(k_c)     "Monotonic decrease of hot intermediate fluid temperature as stage number increases in Plant 6"
+    
+    Constraint_19(k_h)        "Monotonic decrease of cold intermediate fluid temperature as stage number increases in Plant 4"
+    
+    Constraint_20a(k_c)       "Heat released by hot intermediate fluid to the cold process stream in Plant 5 at each stage"
+    Constraint_20b(k_c)       "Heat released by hot intermediate fluid to the cold process stream in Plant 6 at each stage"
+    
+    Constraint_21(k_h)        "Heat absorbed by cold intermediate fluid from the hot process streams in Plant 4 at each stage"
+    
+    Constraint_22(i,k_h)      "Enthalpy variation of each hot process stream in Plant 4 at each stage"
+    
+    Constraint_23a(j,k_c)       "Enthalpy variation of the cold process stream in Plant 5 at each stage"
+    Constraint_23b(j,k_c)       "Enthalpy variation of the cold process stream in Plant 6 at each stage"
+    
+    Constraint_24a(j,k_c)       "Logical constraint to determine the existence of a heat exchanger at each stage in Plant 5 between cold process stream and hot intermediate fluid"
+    Constraint_24b(j,k_c)       "Logical constraint to determine the existence of a heat exchanger at each stage in Plant 6 between cold process stream and hot intermediate fluid"
+    
+    Constraint_25(i,k_h)      "Logical constraint to determine the existence of a heat exchanger at each stage in Plant 4 between hot process stream and cold intermediate fluid"
+    
+    Constraint_26a(j,k_c)       "Maximum approach temperature at the left side of the HEX between the cold process stream in Plant 5 and the hot intermediate fluid at each stage"
+    Constraint_26b(j,k_c)       "Maximum approach temperature at the left side of the HEX between the cold process stream in Plant 6 and the hot intermediate fluid at each stage"
+    
+    Constraint_27a(j,k_c)       "Maximum approach temperature at the right side of the HEX between the cold process stream in Plant 5 and the hot intermediate fluid at each stage"
+    Constraint_27b(j,k_c)       "Maximum approach temperature at the right side of the HEX between the cold process stream in Plant 6 and the hot intermediate fluid at each stage"
+    
+    Constraint_28(i,k_h)      "Maximum approach temperature at the left side of the HEX between each hot process stream in Plant 4 and the cold intermediate fluid at each stage"
+    
+    Constraint_29(i,k_h)      "Maximum approach temperature at the right side of the HEX between each hot process stream in Plant 4 and the cold intermediate fluid at each stage"
+    
+    Constraint_34(i)        "Cooling utility load for each hot process stream in Plant 4 at the last superstructure stage"
+    
+    Constraint_35a(j)          "Heating utility load for the cold process stream in Plant 5 at the first superstructure stage"
+    Constraint_35b(j)          "Heating utility load for the cold process stream in Plant 6 at the first superstructure stage"
+    
+    Constraint_36(p,s,pp,ss)    "Internal diameter of the pipe transporting intermediate fluid"
+    Constraint_39(p,s,pp,ss)    "Pipeline capital cost per unit length"
+    Constraint_40(p,s,pp,ss)    "Capital cost of pipeline adjusted to May 2024 price"
+    
+    Constraint_41(p,s,pp,ss)    "Velocity of the intermediate fluid"
+    Constraint_42(p,s,pp,ss)    "Reynolds number of the intermediate fluid"
+    Constraint_43(p,s,pp,ss)    "Friction factor of the intermediate fluid"
+    
+    Constraint_44(p,s,pp,ss)    "Pressure drop of IHTF along the pipeline"
+    
+    Constraint_45(p,s,pp,ss)    "Capital cost of IHTF pump"
+    
+    Constraint_46(p,s,pp,ss)    "IHTF pump power consumption"
+    
+    Constraint_47(p,s,pp,ss)    "Annualized pump operation cost for transporting intermediate fluid stream"
+    Constraint_48(p,s,pp,ss)    "Total pumping cost for transporting intermediate fluid stream"
+    
+    Constraint_49(i,k_h)      "Calculation of HEX area between cold intermediate fluid and hot process stream in Plant 4"
+    
+    Constraint_49a(i,k_h)       "Calculation of capital cost of HEX between hot process stream and cold IHTF in Plant 4"
+    
+    Constraint_50a(j,k_c)       "Calculation of HEX area between hot intermediate fluid and cold process stream in Plant 5"
+    Constraint_50b(j,k_c)       "Calculation of HEX area between hot intermediate fluid and cold process stream in Plant 6"
+    
+    Constraint_50c(j,k_c)         "Calculation of capital cost of HEX between cold process stream and hot IHTF in Plant 5"
+    Constraint_50d(j,k_c)         "Calculation of capital cost of HEX between cold process stream and hot IHTF in Plant 6"
+
+    Objective               "Minimize total annualized cost"    ;
+    
+Constraint_1a.. Mh('P5') =e= m('P5','hot_IF','P6','hot_IF') ;
+Constraint_1b.. Mh('P6') =e= m('P6','hot_IF','P4','cold_IF') ;
+Constraint_2.. Mc('P4') =e= m('P4','cold_IF','P5','hot_IF') ;
+
+Constraint_3a.. y('P4','cold_IF','P5','hot_IF') =e= m('P4','cold_IF','P5','hot_IF') / (m('P4','cold_IF','P5','hot_IF') + delta) ;
+Constraint_3b.. y('P5','hot_IF','P6','hot_IF') =e= m('P5','hot_IF','P6','hot_IF') / (m('P5','hot_IF','P6','hot_IF') + delta) ;
+Constraint_3d.. y('P6','hot_IF','P4','cold_IF') =e= m('P6','hot_IF','P4','cold_IF') / (m('P6','hot_IF','P4','cold_IF') + delta) ;
+
+Constraint_4a.. Mh('P5') =e= m('P4','cold_IF','P5','hot_IF') ;
+Constraint_4b.. Mh('P6') =e= m('P5','hot_IF','P6','hot_IF') ;
+Constraint_5.. Mc('P4') =e= m('P6','hot_IF','P4','cold_IF') ;
+
+Constraint_6a.. m('P4','cold_IF','P5','hot_IF') * (tcmout('P4') - thmin('P5')) * 10**6 =e= pi * Din('P4','cold_IF','P5','hot_IF') * L('P4','P5') * U * delta_T ;
+Constraint_6b.. m('P5','hot_IF','P6','hot_IF') * (thmout('P5') - thmin('P6')) * 10**6 =e= pi * Din('P5','hot_IF','P6','hot_IF') * L('P5','P6') * U * delta_T ;
+Constraint_7b.. m('P6','hot_IF','P4','cold_IF') * (thmout('P6') - tcmin('P4')) * 10**6 =e= pi * Din('P6','hot_IF','P4','cold_IF') * L('P6','P4') * U * delta_T ;
+
+Constraint_8a.. thm('P5',firstKc) =e= thmin('P5') ;
+Constraint_8b.. thm('P6',firstKc) =e= thmin('P6') ;
+
+Constraint_9.. tcm('P4',firstKh) =e= tcmout('P4') ;
+
+Constraint_10(i).. t_h('P4',i,firstKh) =e= tin_h('P4',i) ;
+
+Constraint_11a.. thm('P5',lastKc) =e= thmout('P5') ;
+Constraint_11b.. thm('P6',lastKc) =e= thmout('P6') ;
+
+Constraint_12.. tcm('P4',lastKh) =e= tcmin('P4') ;
+
+Constraint_13a(j)$j5(j).. t_c('P5',j,lastKc) =e= tin_c('P5',j) ;
+Constraint_13b(j)$j6(j).. t_c('P6',j,lastKc) =e= tin_c('P6',j) ;
+
+Constraint_14(i).. F_h('P4',i) * (tin_h('P4',i) - tout_h('P4',i)) =e= sum(sth, qc('P4',i,sth)) + qu_h('P4',i) ;
+
+Constraint_15a(j)$j5(j).. F_c('P5',j) * (tout_c('P5',j) - tin_c('P5',j)) =e= sum(stc, qh('P5',j,stc)) + qu_c('P5',j) ;
+Constraint_15b(j)$j6(j).. F_c('P6',j) * (tout_c('P6',j) - tin_c('P6',j)) =e= sum(stc, qh('P6',j,stc)) + qu_c('P6',j) ;
+
+Constraint_16(i,k_h)$sth(k_h).. t_h('P4',i,k_h) =g= t_h('P4',i,k_h+1) ;
+
+Constraint_17a(j,k_c)$(j5(j) and stc(k_c)).. t_c('P5',j,k_c) =g= t_c('P5',j,k_c+1) ;
+Constraint_17b(j,k_c)$(j6(j) and stc(k_c)).. t_c('P6',j,k_c) =g= t_c('P6',j,k_c+1) ;
+
+Constraint_18a(k_c)$stc(k_c).. thm('P5',k_c) =g= thm('P5',k_c+1) ;
+Constraint_18b(k_c)$stc(k_c).. thm('P6',k_c) =g= thm('P6',k_c+1) ;
+
+Constraint_19(k_h)$sth(k_h).. tcm('P4',k_h) =g= tcm('P4',k_h+1) ;
+
+Constraint_20a(k_c)$stc(k_c).. Mh('P5') * (thm('P5',k_c) - thm('P5',k_c+1)) =e= sum(j5,qh('P5',j5,k_c)) ;
+Constraint_20b(k_c)$stc(k_c).. Mh('P6') * (thm('P6',k_c) - thm('P6',k_c+1)) =e= sum(j6,qh('P6',j6,k_c)) ;
+
+Constraint_21(k_h)$sth(k_h).. Mc('P4') * (tcm('P4',k_h) - tcm('P4',k_h+1)) =e= sum(i,qc('P4',i,k_h)) ;
+
+Constraint_22(i,k_h)$sth(k_h).. F_h('P4',i) * (t_h('P4',i,k_h) - t_h('P4',i,k_h+1)) =e= qc('P4',i,k_h) ;
+
+Constraint_23a(j,k_c)$(j5(j) and stc(k_c)).. F_c('P5',j) * (t_c('P5',j,k_c) - t_c('P5',j,k_c+1)) =e= qh('P5',j,k_c) ;
+Constraint_23b(j,k_c)$(j6(j) and stc(k_c)).. F_c('P6',j) * (t_c('P6',j,k_c) - t_c('P6',j,k_c+1)) =e= qh('P6',j,k_c) ;
+
+Constraint_24a(j,k_c)$(j5(j) and stc(k_c)).. zh('P5',j,k_c) =e= qh('P5',j,k_c) / (qh('P5',j,k_c) + delta) ;
+Constraint_24b(j,k_c)$(j6(j) and stc(k_c)).. zh('P6',j,k_c) =e= qh('P6',j,k_c) / (qh('P6',j,k_c) + delta) ;
+
+Constraint_25(i,k_h)$sth(k_h).. zc('P4',i,k_h) =e= qc('P4',i,k_h) / (qc('P4',i,k_h) + delta) ;
+
+Constraint_26a(j,k_c)$(j5(j) and stc(k_c)).. dth('P5',j,k_c) =l= thm('P5',k_c) - t_c('P5',j,k_c) + (1 - zh('P5',j,k_c)) * gamma_h('P5',j) ;
+Constraint_26b(j,k_c)$(j6(j) and stc(k_c)).. dth('P6',j,k_c) =l= thm('P6',k_c) - t_c('P6',j,k_c) + (1 - zh('P6',j,k_c)) * gamma_h('P6',j) ;
+
+Constraint_27a(j,k_c)$(j5(j) and stc(k_c)).. dth('P5',j,k_c+1) =l= thm('P5',k_c+1) - t_c('P5',j,k_c+1) + (1 - zh('P5',j,k_c)) * gamma_h('P5',j) ;
+Constraint_27b(j,k_c)$(j6(j) and stc(k_c)).. dth('P6',j,k_c+1) =l= thm('P6',k_c+1) - t_c('P6',j,k_c+1) + (1 - zh('P6',j,k_c)) * gamma_h('P6',j) ;
+
+Constraint_28(i,k_h)$sth(k_h).. dtc('P4',i,k_h) =l= t_h('P4',i,k_h) - tcm('P4',k_h) + (1 - zc('P4',i,k_h)) * gamma_c('P4',i) ;
+
+Constraint_29(i,k_h)$sth(k_h).. dtc('P4',i,k_h+1) =l= t_h('P4',i,k_h+1) - tcm('P4',k_h+1) + (1 - zc('P4',i,k_h)) * gamma_c('P4',i) ;
+
+Constraint_34(i).. qu_h('P4',i) =e= F_h('P4',i) * (t_h('P4',i,lastKh) - tout_h('P4',i)) ;
+
+Constraint_35a(j)$j5(j).. qu_c('P5',j) =e= F_c('P5',j) * (tout_c('P5',j) - t_c('P5',j,firstKc)) ;
+Constraint_35b(j)$j6(j).. qu_c('P6',j) =e= F_c('P6',j) * (tout_c('P6',j) - t_c('P6',j,firstKc)) ;
+
+Constraint_36(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Din(p,s,pp,ss) =e= (6.05*10**(-4) * Hy * C_power * (m(p,s,pp,ss) * 1000 / cp)**2.84 * mu**0.16 * rho**(-2) / (etta * n_pipe * B_pipe * (1 + F) * (Af + b_maint)))**(1/(4.84+n_pipe)) ;
+
+Constraint_39(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Pl(p,s,pp,ss) =e= 4.7 * Din(p,s,pp,ss)**1.7 ;
+
+Constraint_40(p,s,pp,ss)$(plant_IF(p,s,pp,ss) and plant_connect(p,pp)).. Piping(p,s,pp,ss) =e= Af * L(p,pp) * Pl(p,s,pp,ss) * CEPCI_2024_pipe / CEPCI_2006_pipe ;
+
+Constraint_41(p,s,pp,ss)$plant_IF(p,s,pp,ss).. v(p,s,pp,ss) * cp * pi * rho * Din(p,s,pp,ss) * Din(p,s,pp,ss) =e= 4 * m(p,s,pp,ss) * 1000 ;
+Constraint_42(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Re(p,s,pp,ss) * mu * 1000 =e= rho * Din(p,s,pp,ss) * v(p,s,pp,ss) ;
+Constraint_43(p,s,pp,ss)$plant_IF(p,s,pp,ss).. fr(p,s,pp,ss) * (Re(p,s,pp,ss) * 1000)**0.2 =e= 0.046 ;
+
+Constraint_44(p,s,pp,ss)$(plant_IF(p,s,pp,ss) and plant_connect(p,pp)).. delta_P(p,s,pp,ss) * Din(p,s,pp,ss) * 1000 =e= 2 * fr(p,s,pp,ss) * L(p,pp) * rho * v(p,s,pp,ss) * v(p,s,pp,ss) ;
+    
+Constraint_45(p,s,pp,ss)$plant_IF(p,s,pp,ss).. log10(Pumpcapital(p,s,pp,ss) * 1000 + delta) =e= y(p,s,pp,ss)*K1_pump + K2_pump*log10(Q(p,s,pp,ss)+delta) + K3_pump*log10(Q(p,s,pp,ss)+delta)*log10(Q(p,s,pp,ss)+delta) ;
+
+Constraint_46(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Q(p,s,pp,ss) * cp * rho * etta =e= m(p,s,pp,ss) * delta_P(p,s,pp,ss) * 1000 ;
+
+Constraint_47(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Pumpoperation(p,s,pp,ss) * 1000 =e= C_power * Hy * Q(p,s,pp,ss);
+
+Constraint_48(p,s,pp,ss)$plant_IF(p,s,pp,ss).. Pumping(p,s,pp,ss) =e= Pumpoperation(p,s,pp,ss) + Af * Pumpcapital(p,s,pp,ss) * CEPCI_2024_plant / CEPCI_2001_plant ;
+
+Constraint_49(i,k_h).. qc('P4',i,k_h)*1000*(ho**(-1)+h_h('P4',i)**(-1)) =e= A_h('P4',i,k_h)*((dtc('P4',i,k_h)*dtc('P4',i,k_h+1)*0.5*(dtc('P4',i,k_h)+dtc('P4',i,k_h+1)))**0.33333) ;
+
+Constraint_49a(i,k_h)$sth(k_h).. log10(HEX_h_cost('P4',i,k_h)*1000+delta) =e= zc('P4',i,k_h)*K1_HEX + K2_HEX*log10(A_h('P4',i,k_h)+delta) + K3_HEX*log10(A_h('P4',i,k_h)+delta)*log10(A_h('P4',i,k_h)+delta) ;
+
+Constraint_50a(j,k_c)$j5(j).. qh('P5',j,k_c)*1000*(ho**(-1)+h_c('P5',j)**(-1)) =e= A_c('P5',j,k_c)*((dth('P5',j,k_c)*dth('P5',j,k_c+1)*0.5*(dth('P5',j,k_c)+dth('P5',j,k_c+1)))**0.33333) ;
+Constraint_50b(j,k_c)$j6(j).. qh('P6',j,k_c)*1000*(ho**(-1)+h_c('P6',j)**(-1)) =e= A_c('P6',j,k_c)*((dth('P6',j,k_c)*dth('P6',j,k_c+1)*0.5*(dth('P6',j,k_c)+dth('P6',j,k_c+1)))**0.33333) ;
+
+Constraint_50c(j,k_c)$(j5(j) and stc(k_c)).. log10(HEX_c_cost('P5',j,k_c)*1000+delta) =e= zh('P5',j,k_c)*K1_HEX + K2_HEX*log10(A_c('P5',j,k_c)+delta) + K3_HEX*log10(A_c('P5',j,k_c)+delta)*log10(A_c('P5',j,k_c)+delta) ;
+Constraint_50d(j,k_c)$(j6(j) and stc(k_c)).. log10(HEX_c_cost('P6',j,k_c)*1000+delta) =e= zh('P6',j,k_c)*K1_HEX + K2_HEX*log10(A_c('P6',j,k_c)+delta) + K3_HEX*log10(A_c('P6',j,k_c)+delta)*log10(A_c('P6',j,k_c)+delta) ;
+
+Objective.. TAC =e= CU_lp*sum(j5,qu_c('P5',j5))*1000 + CU_lp*sum(j6,qu_c('P6',j6))*1000 + CU_cow*sum(i,qu_h('P4',i))*1000
+                  + sum((p,s,pp,ss)$plant_IF(p,s,pp,ss),Piping(p,s,pp,ss))
+                  + sum((p,s,pp,ss)$plant_IF(p,s,pp,ss),Pumping(p,s,pp,ss))
+                  + Af * sum((i,k_h),HEX_h_cost('P4',i,k_h)) * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * sum((j5,k_c),HEX_c_cost('P5',j5,k_c)) * CEPCI_2024_plant / CEPCI_2001_plant
+                  + Af * sum((j6,k_c),HEX_c_cost('P6',j6,k_c)) * CEPCI_2024_plant / CEPCI_2001_plant ; 
+                  
+*Variable bounds
+dtc.lo('P4',i,k_h) = 10 ;
+dtc.up('P4',i,k_h) = 99 ;
+
+dth.lo('P5',j5,k_c) = 10 ;
+dth.up('P5',j5,k_c) = 99 ;
+
+dth.lo('P6',j6,k_c) = 10 ;
+dth.up('P6',j6,k_c) = 99 ;
+
+Din.up(p,s,pp,ss) = 0.65 ;
+m.up(p,s,pp,ss) = 1 ;
+Mc.up(p) = 1 ;
+Mh.up(p) = 1 ;
+
+qc.up('P4',i,k_h) = 9.018 ;
+qh.up('P5',j5,k_c) = 3.057 ;
+qh.up('P6',j6,k_c) = 1.5604 ;
+
+A_h.up('P4',i,k_h) = 1000 ;
+A_c.up('P5',j5,k_c) = 1000 ;
+A_c.up('P6',j6,k_c) = 1000 ;
+
+Pumpcapital.up(p,s,pp,ss) = 30 ;
+
+HEX_h_cost.up('P4',i,k_h) = 77 ;
+HEX_c_cost.up('P5',j5,k_c) = 77 ;
+HEX_c_cost.up('P6',j6,k_c) = 77 ;
+
+Model replica_model / all /;
+
+Option OptCR = 0.2;
+Option ResLim = 28000 ;
+
+Solve replica_model using NLP minimizing TAC;
